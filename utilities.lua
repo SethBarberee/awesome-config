@@ -1,0 +1,64 @@
+local awful = require("awful")
+local naughty = require("naughty")
+local beautiful = require("beautiful")
+
+utilities = {}
+
+-- Run a program once
+function utilities.run_once(prg, arg_string, pname, s, tag)
+    if not prg then
+        do return nil end
+    end
+
+    if not pname then
+       pname = prg
+    end
+
+    if not arg_string then
+       cmd_pgrep = pname
+       cmd_exe = prg
+    else
+       cmd_pgrep = pname .. " " .. arg_string
+       cmd_exe = prg .. " " .. arg_string
+    end
+    cmd = "pgrep -f -u $USER -x '" .. cmd_pgrep .. "' || (" .. cmd_exe .. ")"
+    if s and tag then
+       local pid = io.popen("pgrep -f -x '" .. cmd_pgrep .. "'"):read("*all")
+       if pid == "" then
+          awful.spawn(cmd_exe, { tag = screen[s].tags[tag] })
+       end
+    else
+       awful.spawn.with_shell(cmd)
+    end
+end
+
+-- Confirmation dialog
+function utilities.confirm_action(func, name)
+   awful.screen.focused().mywibox:set_bg(beautiful.bg_urgent)
+   awful.screen.focused().mywibox:set_fg(beautiful.fg_urgent)
+   awful.prompt.run {
+         prompt = name .. " [y/N] ",
+         textbox = awful.screen.focused().mypromptbox_conf.widget,
+         exe_callback = function (t)
+            if string.lower(t) == 'y' then
+               func()
+            end
+         end,
+         history_path = nil,
+         done_callback = function ()
+            awful.screen.focused().mywibox:set_bg(
+               beautiful.screen_highlight_bg_active)
+            awful.screen.focused().mywibox:set_fg(
+               beautiful.screen_highlight_fg_active)
+         end
+   }
+end
+
+function utilities.notify_me(title,txt)
+    naughty.notify({
+			title = title,
+			text = txt
+	})
+end
+
+return utilities

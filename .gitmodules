@@ -1,0 +1,15 @@
+[submodule "awesome-cyclefocus"]
+	path = awesome-cyclefocus
+	url = https://github.com/blueyed/awesome-cyclefocus
+[submodule "lain"]
+	path = lain
+	url = https://github.com/copycat-killer/lain.git
+[submodule "revelation"]
+	path = revelation
+	url = https://github.com/guotsuan/awesome-revelation
+[submodule "vicious"]
+	path = vicious
+	url = https://github.com/Mic92/vicious.git
+[submodule "cyclefocus"]
+	path = cyclefocus
+	url = https://github.com/blueyed/awesome-cyclefocus
