@@ -135,6 +135,7 @@ theme.calendar_icon = themes_path .. "algae/icons/calendar.png"
 theme.cpu_icon = themes_path .. "algae/icons/cpu.png"
 theme.temp_icon = themes_path .. "algae/icons/temp.png"
 theme.pkg_icon = themes_path .. "algae/icons/pacman.png"
+theme.vol_icon = themes_path .. "algae/icons/volume.png"
 
 
 -- Wallpaper

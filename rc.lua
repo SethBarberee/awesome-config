@@ -15,7 +15,6 @@ local beautiful = require("beautiful")
 local naughty = require("naughty")
 local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
-local radical = require("radical")
 -- Revelation library
 local revelation = require("revelation")
 -- Alt tab preview
@@ -198,12 +197,9 @@ end
 
 
 tempicon:connect_signal('mouse::enter', function () disptemp(path) end)
-tempicon:connect_signal('mouse::leave', function () naughty.destroy(showtempinfo)
- end)
+tempicon:connect_signal('mouse::leave', function () naughty.destroy(showtempinfo)end)
 
--- Create redshift widget
-local markup = lain.util.markup
-
+-- Redshift widget
 local myredshift = wibox.widget{
     checked      = false,
     check_color  = "#EB8F8F",
@@ -236,11 +232,34 @@ lain.widget.contrib.redshift:attach(
     end
 )
 
+--Create the volume widget
+local volicon = wibox.widget.imagebox(beautiful.vol_icon)
+volwidget = wibox.widget.textbox()
+awful.widget.watch("ponymix get-volume",5,function(widget, stdout)
+		widget:set_text(" " .. stdout)
+end,volwidget)
+
 -- Create the package widget
 local pkgicon = wibox.widget.imagebox(beautiful.pkg_icon)
 pkgwidget = wibox.widget.textbox()
-vicious.cache(vicious.widgets.pkg)
-vicious.register(pkgwidget, vicious.widgets.pkg, '$1 Updates ', 15, "Arch C")
+awful.widget.watch("checkupdates",15,function(widget, stdout)
+        widget:set_text(stdout)
+ end,pkgwidget) 
+-- This should somewhat work in 4.2
+--pkgwidget.text = awful.spawn.with_shell("checkupdates | wc -l", function(stdout,stderr,exitreason,exitcode)
+--		return stdout
+--end)
+-- NOTE: update function to handle when no updates are found
+--pkgwidget:connect_signal('mouse::enter', function ()
+--		awful.spawn.easy_async_with_shell("checkupdates", function(stdout,stderr,exitreason,exitcode)
+--				naughty.notify({
+--						title = "Package List:",
+--						text = stdout
+--				})
+--		end)
+--end)
+--pkgwidget:connect_signal('mouse::leave', function () naughty.destroy_all_notifications)end)
+
 
 -- Seperator
 local arrow = separators.arrow_left
@@ -378,7 +397,9 @@ awful.screen.connect_for_each_screen(function(s)
 		first,
 		arrow("alpha","#ff0000"),
 		wibox.container.background(wibox.container.margin(wibox.widget {myredshift_stack, layout = wibox.layout.align.horizontal }, 3, 4), "#ff0000"),
-		arrow("#ff0000","#FF79C6"),
+		arrow("#ff0000", "#BD7533"),
+        wibox.container.background(wibox.container.margin(wibox.widget {volicon, volwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
+		arrow("#BD7533","#FF79C6"),
 		wibox.container.background(wibox.container.margin(wibox.widget {pkgicon, pkgwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#FF79C6"),
 	    arrow("#FF79C6","#777E76"),
 		wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
