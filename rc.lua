@@ -7,7 +7,7 @@ require("awful.autofocus")
 local wibox = require("wibox")
 local vicious = require("vicious")
 local lain = require("lain")
-local markup = lain.util.markup
+local lain_markup = lain.util.markup
 local separators = lain.util.separators
 -- Theme handling library
 local beautiful = require("beautiful")
@@ -18,7 +18,8 @@ local hotkeys_popup = require("awful.hotkeys_popup").widget
 -- Revelation library
 local revelation = require("revelation")
 -- Alt tab preview
-local cyclefocus = require("cyclefocus")
+cyclefocus = require("cyclefocus")
+cyclefocus.debug_use_naughty_notify = 0
 -- Utilites lua for useful functions
 local utilities = require("utilities")
 -- Common library
@@ -29,6 +30,7 @@ require("awful.hotkeys_popup.keys.vim")
 local config_path = awful.util.get_configuration_dir()
 
 dofile(config_path .. "error-handling.lua")
+dofile(config_path .. "tag.lua")
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
@@ -125,8 +127,6 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", ".local/share/applications" }
 --- }}}
 
--- Keyboard map indicator and switcher
-mykeyboardlayout = awful.widget.keyboardlayout()
 
 -- {{{ Wibar
 -- Create a textclock widget
@@ -149,7 +149,7 @@ local calendar = lain.widget.calendar({
 local cpuicon = wibox.widget.imagebox(beautiful.cpu_icon)
 local cpuwidget = lain.widget.cpu({
     settings = function()
-        widget:set_markup(markup.font("Monospace 10", " " .. cpu_now.usage .. "% "))
+        widget:set_markup(lain_markup.font("Monospace 10", " " .. cpu_now.usage .. "% "))
     end
 
 })
@@ -166,7 +166,7 @@ local tempicon = wibox.widget.imagebox(beautiful.temp_icon)
 local cputemp = lain.widget.temp({
      tempfile = "/sys/class/thermal/thermal_zone2/temp",
      settings = function()
-        widget:set_markup(markup.fontfg("Monospace 10", "#ffffff", " " .. coretemp_now .. " °C "))
+        widget:set_markup(lain_markup.fontfg("Monospace 10", "#ffffff", " " .. coretemp_now .. " °C "))
     end
 })
 
@@ -191,7 +191,6 @@ local function disptemp()
         margin = 8,
         height = 110,
         width = 460,
-        opacity = 0.94,
         screen  = capi.mouse.screen })
 end
 
@@ -224,9 +223,9 @@ lain.widget.contrib.redshift:attach(
     myredshift,
     function (active)
         if active then
-            myredshift_text:set_markup(markup(beautiful.bg_normal, "<b>R</b>"))
+            myredshift_text:set_markup(lain_markup(beautiful.bg_normal, "<b>R</b>"))
         else
-            myredshift_text:set_markup(markup(beautiful.fg_normal, "R"))
+            myredshift_text:set_markup(lain_markup(beautiful.fg_normal, "R"))
         end
         myredshift.checked = active
     end
@@ -243,22 +242,42 @@ end,volwidget)
 local pkgicon = wibox.widget.imagebox(beautiful.pkg_icon)
 pkgwidget = wibox.widget.textbox()
 awful.widget.watch("checkupdates",15,function(widget, stdout)
-        widget:set_text(stdout)
+		if stdout == "" then
+				widget:set_markup_silently("0 ")
+		else
+				-- Count up the updates
+				--local count
+				--for line in stdout:gmatch("[\n]+") do
+				--		count = count + 1
+				--end
+				-- Display the number
+				--widget:set_markup_silently(count)
+				widget:set_markup_silently("")
+		end
  end,pkgwidget) 
--- This should somewhat work in 4.2
---pkgwidget.text = awful.spawn.with_shell("checkupdates | wc -l", function(stdout,stderr,exitreason,exitcode)
---		return stdout
---end)
--- NOTE: update function to handle when no updates are found
---pkgwidget:connect_signal('mouse::enter', function ()
---		awful.spawn.easy_async_with_shell("checkupdates", function(stdout,stderr,exitreason,exitcode)
---				naughty.notify({
---						title = "Package List:",
---						text = stdout
---				})
---		end)
---end)
---pkgwidget:connect_signal('mouse::leave', function () naughty.destroy_all_notifications)end)
+pkgicon:connect_signal('mouse::enter', function ()
+		awful.spawn.easy_async_with_shell("checkupdates", function(stdout,stderr,exitreason,exitcode)
+				local pkginfo
+				if stdout == "" then
+						-- No updates
+						pkginfo = naughty.notify({
+								title = "Package List:",
+								text = "No updates found",
+								timeout = 0,
+								hover_timeout = 0.5
+						})
+				else
+						-- Display list of updates
+						pkginfo = naughty.notify({
+								title = "Package List:",
+								text = stdout,
+								timeout = 0,
+								hover_timeout = 0.5
+						})
+				end
+		end)
+end)
+pkgicon:connect_signal('mouse::leave',function() naughty.destroy(pkginfo)end)
 
 
 -- Seperator
@@ -325,7 +344,7 @@ local function set_wallpaper(s)
 		awful.spawn.with_shell("wal/wal -x -n -q -i" .. wallpapers[2])
     elseif hr >= 16 and hr <= 18 then -- evening
         gears.wallpaper.maximized(wallpapers[3], s, true)
-		awful.spawn.with_shell("wal/wal -x -n -q -i" .. wallpapers[3])
+		awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[3])
     elseif hr >= 19 and hr <= 23 then -- night
         gears.wallpaper.maximized(wallpapers[4], s, true)
 		awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[4])
@@ -354,8 +373,7 @@ awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
 
-    -- Each screen has its own tag table.
-    awful.tag({ "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" }, s, awful.layout.layouts[1])
+    --awful.tag({ "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" }, s, awful.layout.layouts[1])
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -368,7 +386,7 @@ awful.screen.connect_for_each_screen(function(s)
                            awful.button({ }, 4, function () awful.layout.inc( 1) end),
                            awful.button({ }, 5, function () awful.layout.inc(-1) end)))
     -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.all, taglist_buttons)
+    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.noempty, taglist_buttons)
 
     -- Create a tasklist widget
     s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
@@ -393,7 +411,6 @@ awful.screen.connect_for_each_screen(function(s)
         s.mytasklist, -- Middle widget
         { -- Right widgets
         layout = wibox.layout.fixed.horizontal,
-        mykeyboardlayout,
 		first,
 		arrow("alpha","#ff0000"),
 		wibox.container.background(wibox.container.margin(wibox.widget {myredshift_stack, layout = wibox.layout.align.horizontal }, 3, 4), "#ff0000"),
@@ -766,7 +783,7 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 -- {{{ Autostart section
-utilities.run_once("ckb",nil)
+utilities.run_once("ckb")
 utilities.run_once("thunar --daemon")
 utilities.run_once("light-locker")
 -- }}}
