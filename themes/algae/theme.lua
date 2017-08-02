@@ -10,10 +10,11 @@ local dpi = xresources.apply_dpi
 local gfs = require("gears.filesystem")
 local algae_path = os.getenv("HOME") .. "/.config/awesome/themes/algae/"
 local themes_dir = os.getenv("HOME") .. "/.config/awesome/themes/"
+local lain_icons = os.getenv("HOME") .."/.config/awesome/lain/icons/layout/default/"
 
 local theme = {}
 
-theme.font          = "xft: Font Awesome 9"
+theme.font          = "xft: Hack 9"
 
 theme.bg_normal     = "#282A36"
 theme.bg_focus      = "#50FA7B"
@@ -26,7 +27,7 @@ theme.fg_focus      = "#000000"
 theme.fg_urgent     = "#ffffff"
 theme.fg_minimize   = "#ffffff"
 
-theme.useless_gap   = dpi(5)
+theme.useless_gap   = dpi(4)
 theme.border_width  = dpi(3)
 theme.border_normal = "#000000"
 theme.border_focus  = "#50FA7B"
@@ -104,7 +105,7 @@ theme.titlebar_maximized_button_focus_inactive  = themes_dir.."default/titlebar/
 theme.titlebar_maximized_button_normal_active = themes_dir.."default/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active  = themes_dir.."default/titlebar/maximized_focus_active.png"
 
--- You can use your own layout icons like this:
+-- Use default white icons
 theme.layout_fairh = themes_dir.."default/layouts/fairhw.png"
 theme.layout_fairv = themes_dir.."default/layouts/fairvw.png"
 theme.layout_floating  = themes_dir.."default/layouts/floatingw.png"
@@ -122,7 +123,15 @@ theme.layout_cornerne = themes_dir.."default/layouts/cornernew.png"
 theme.layout_cornersw = themes_dir.."default/layouts/cornersww.png"
 theme.layout_cornerse = themes_dir.."default/layouts/cornersew.png"
 
--- Icons
+-- Lain layout icons
+theme.layout_termfair    = lain_icons .. "termfair.png"
+theme.layout_centerfair  = lain_icons .. "centerfair.png"  -- termfair.center
+theme.layout_cascade     = lain_icons .. "cascade.png"
+theme.layout_cascadetile = lain_icons .. "cascadetile.png" -- cascade.tile
+theme.layout_centerwork  = lain_icons .. "centerwork.png"
+theme.layout_centerhwork = lain_icons .. "centerworkh.png" -- centerwork.horizontal
+
+-- Icons for widgets
 theme.calendar_icon = algae_path .. "icons/calendar.png"
 theme.cpu_icon = algae_path .. "icons/cpu.png"
 theme.temp_icon = algae_path .. "icons/temp.png"
@@ -130,7 +139,7 @@ theme.pkg_icon = algae_path .. "icons/pacman.png"
 theme.vol_icon = algae_path .. "icons/volume.png"
 
 
--- Wallpaper
+-- Wallpaper if not using wallpaper setter
 theme.wallpaper = algae_path .. "background.png"
 
 

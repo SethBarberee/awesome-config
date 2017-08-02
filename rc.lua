@@ -45,9 +45,6 @@ wallpapers = {
     config_path.."themes/algae/wallpapers/night.jpg"
 }
 
-
-
-
 -- This is used later as the default terminal and editor to run.
 terminal = "urxvt"
 editor = os.getenv("EDITOR") or "nvim"
@@ -60,25 +57,6 @@ editor_cmd = terminal .. " -e " .. editor
 -- However, you can use another modifier like Mod1, but it may interact with others.
 modkey = "Mod1"
 
--- Table of layouts to cover with awful.layout.inc, order matters.
-awful.layout.layouts = {
-    awful.layout.suit.floating,
-    awful.layout.suit.tile,
-    awful.layout.suit.tile.left,
-    awful.layout.suit.tile.bottom,
-    awful.layout.suit.tile.top,
-    awful.layout.suit.fair,
-    awful.layout.suit.fair.horizontal,
-    awful.layout.suit.spiral,
-    awful.layout.suit.spiral.dwindle,
-    awful.layout.suit.max,
-    awful.layout.suit.max.fullscreen,
-    awful.layout.suit.magnifier,
-    awful.layout.suit.corner.nw,
-    -- awful.layout.suit.corner.ne,
-    -- awful.layout.suit.corner.sw,
-    -- awful.layout.suit.corner.se,
-}
 -- }}}
 
 -- {{{ Helper functions
@@ -124,22 +102,21 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 
 -- Menubar configuration
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
-menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", ".local/share/applications" }
+menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", "~/.local/share/applications" }
 --- }}}
 
 
 -- {{{ Wibar
 -- Create a textclock widget
 local calendaricon = wibox.widget.imagebox(beautiful.calendar_icon)
-local mytextclock = wibox.widget.textclock("<span foreground=\"white\"> %m.%d.%y %H:%M </span>")
-mytextclock.font="Monospace 10"
+local mytextclock = wibox.widget.textclock("<span foreground=\"white\">  %m.%d.%y %H:%M </span>")
 
 local calendar = lain.widget.calendar({
 	cal = "/usr/bin/env TERM=linux /usr/bin/cal --color=always",
 	followtag = true,
 	attach_to = {mytextclock},
 	notification_preset={
-	  font = beautiful.taglist_font,
+	  font = "Monospace 10",
 	  fg = beautiful.fg_normal,
 	  bg = beautiful.bg_normal
 	}
@@ -149,14 +126,14 @@ local calendar = lain.widget.calendar({
 local cpuicon = wibox.widget.imagebox(beautiful.cpu_icon)
 local cpuwidget = lain.widget.cpu({
     settings = function()
-        widget:set_markup(lain_markup.font("Monospace 10", " " .. cpu_now.usage .. "% "))
+        widget:set_markup(lain_markup.font(beautiful.font, " " .. cpu_now.usage .. "% "))
     end
 
 })
 
 -- Create CPU freq widget
 cpufreq = wibox.widget.textbox()
-vicious.register(cpufreq, vicious.widgets.cpufreq, 
+vicious.register(cpufreq, vicious.widgets.cpufreq,
  function(widget,args)
   return string.format("%s GHz ", args[2])
  end,5,"cpu0")
@@ -166,7 +143,7 @@ local tempicon = wibox.widget.imagebox(beautiful.temp_icon)
 local cputemp = lain.widget.temp({
      tempfile = "/sys/class/thermal/thermal_zone2/temp",
      settings = function()
-        widget:set_markup(lain_markup.fontfg("Monospace 10", "#ffffff", " " .. coretemp_now .. " °C "))
+        widget:set_markup(lain_markup.fontfg(beautiful.font, "#ffffff", " " .. coretemp_now .. " °C "))
     end
 })
 
@@ -213,23 +190,23 @@ local myredshift_text = wibox.widget{
     widget = wibox.widget.textbox,
 }
 
+lain.widget.contrib.redshift:attach(
+    myredshift,
+	function (active)
+		if active then
+		    myredshift_text:set_markup(lain_markup(beautiful.bg_normal, "<b>R</b>"))
+		else
+		    myredshift_text:set_markup(lain_markup(beautiful.fg_normal, "R"))
+        end
+		    myredshift.checked = active
+	end
+)  
+
 local myredshift_stack = wibox.widget{
     myredshift,
     myredshift_text,
     layout = wibox.layout.stack
 }
-
-lain.widget.contrib.redshift:attach(
-    myredshift,
-    function (active)
-        if active then
-            myredshift_text:set_markup(lain_markup(beautiful.bg_normal, "<b>R</b>"))
-        else
-            myredshift_text:set_markup(lain_markup(beautiful.fg_normal, "R"))
-        end
-        myredshift.checked = active
-    end
-)
 
 --Create the volume widget
 local volicon = wibox.widget.imagebox(beautiful.vol_icon)
@@ -254,7 +231,7 @@ awful.widget.watch("checkupdates",15,function(widget, stdout)
 				--widget:set_markup_silently(count)
 				widget:set_markup_silently("")
 		end
- end,pkgwidget) 
+ end,pkgwidget)
 pkgicon:connect_signal('mouse::enter', function ()
 		awful.spawn.easy_async_with_shell("checkupdates", function(stdout,stderr,exitreason,exitcode)
 				local pkginfo
@@ -279,13 +256,10 @@ pkgicon:connect_signal('mouse::enter', function ()
 end)
 pkgicon:connect_signal('mouse::leave',function() naughty.destroy(pkginfo)end)
 
-
 -- Seperator
 local arrow = separators.arrow_left
-local first = wibox.widget.textbox('<span font="Monospace 10"> </span>')
-local arrl_dl = separators.arrow_left("alpha", "alpha")
-local arrl_ld = separators.arrow_left("alpha", beautiful.bg_focus)
-local arrl_right = separators.arrow_right(beautiful.bg_focus,"alpha")
+local spacer = wibox.widget.textbox('<span font="Monospace 10">  </span>')
+local spacer_small = wibox.widget.textbox(' ')
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -313,7 +287,7 @@ local tasklist_buttons = gears.table.join(
 				-- Without this, the following
 				-- :isvisible() makes no sense
                 c.minimized = false
-				
+
 				if not c:isvisible() and c.first_tag then
 						c.first_tag:view_only()
 				end
@@ -373,8 +347,6 @@ awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
 
-    --awful.tag({ "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" }, s, awful.layout.layouts[1])
-
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
     -- Create an imagebox widget which will contains an icon indicating which layout we're using.
@@ -394,25 +366,25 @@ awful.screen.connect_for_each_screen(function(s)
     -- Create the wibox
     s.mywibox = awful.wibar({ position = "bottom", screen = s })
 
-    -- Add widgets to the wibox
     s.mywibox:setup {
         layout = wibox.layout.align.horizontal,
-        { -- Left widgets
+        { 
+		-- Left widgets
         layout = wibox.layout.fixed.horizontal,
         mylauncher,
+		spacer_small,
         s.mytaglist,
-		first,
-		arrl_ld,
-		s.mylayoutbox,
-		arrl_right,
         s.mypromptbox,
-		first,
+		spacer_small,
         },
         s.mytasklist, -- Middle widget
-        { -- Right widgets
+        { 
+		-- Right widgets
         layout = wibox.layout.fixed.horizontal,
-		first,
-		arrow("alpha","#ff0000"),
+		spacer,
+		arrow("alpha","#F99E6C"),
+		wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
+		arrow("#F99E6C","#ff0000"),
 		wibox.container.background(wibox.container.margin(wibox.widget {myredshift_stack, layout = wibox.layout.align.horizontal }, 3, 4), "#ff0000"),
 		arrow("#ff0000", "#BD7533"),
         wibox.container.background(wibox.container.margin(wibox.widget {volicon, volwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
@@ -426,6 +398,7 @@ awful.screen.connect_for_each_screen(function(s)
 		wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
 	    arrow("#4B3B51",beautiful.bg_urgent),
 		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.bg_urgent),
+		spacer_small,
         wibox.widget.systray(),
         },
     }
@@ -464,7 +437,8 @@ globalkeys = gears.table.join(
 	          {description = "Toggle Mute", group="media"}),
     awful.key({}, "XF86AudioRaiseVolume", function() awful.spawn.with_shell("ponymix increase 10") end,
               {description = "Increase Volume", group="media"}),
-    awful.key({}, "XF86AudioLowerVolume", function() awful.spawn.with_shell("ponymix decrease 10") end,                {description = "Decrease Volume", group="media"}),                                         
+    awful.key({}, "XF86AudioLowerVolume", function() awful.spawn.with_shell("ponymix decrease 10") end,
+		      {description = "Decrease Volume", group="media"}),
 
     awful.key({ modkey,           }, "j",
         function ()
@@ -543,8 +517,8 @@ globalkeys = gears.table.join(
     -- Menubar
     awful.key({ modkey }, "p", function() menubar.show() end,
               {description = "show the menubar", group = "launcher"}),
-    awful.key({ modkey, "Shift" }, "p", function() awful.spawn("rofi -show run") end, 
-	          {description = "show rofi", group = "launcher"})
+    awful.key({ modkey, "Shift" }, "p", function() awful.spawn("rofi -show run") end,
+		      {description = "show rofi", group = "launcher"})
 )
 
 clientkeys = gears.table.join(
