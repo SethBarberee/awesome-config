@@ -246,7 +246,7 @@ pkgicon:connect_signal('mouse::enter', function ()
 				local pkginfo = ""
 				if stdout == "" then
 						-- No updates
-                                                pkginfo = utilities.notify_me("Package List:","No Updates found")
+                                                pkginfo = utilities.notify_me("Package List:","No Updates Found")
 				else
 						-- Display list of updates
                                                 pkginfo = utilities.notify_me("Package List:", stdout)

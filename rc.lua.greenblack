@@ -126,7 +126,7 @@ local calendar = lain.widget.calendar({
 	attach_to = {mytextclock},
 	notification_preset={
 	  font = "Monospace 10",
-	  fg = beautiful.fg_normal,
+	  fg = beautiful.fg_focus,
 	  bg = beautiful.bg_normal
 	}
 
