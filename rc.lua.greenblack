@@ -126,7 +126,7 @@ local calendar = lain.widget.calendar({
 	attach_to = {mytextclock},
 	notification_preset={
 	  font = "Monospace 10",
-	  fg = beautiful.fg_focus,
+	  fg = beautiful.fg_normal,
 	  bg = beautiful.bg_normal
 	}
 
@@ -135,7 +135,7 @@ local calendar = lain.widget.calendar({
 local cpuicon = wibox.widget.imagebox(beautiful.cpu_icon)
 local cpuwidget = lain.widget.cpu({
     settings = function()
-        widget:set_markup(lain_markup.font(beautiful.font, " " .. cpu_now.usage .. "% "))
+        widget:set_markup(lain_markup.fontfg(beautiful.font,"#ffffff", " " .. cpu_now.usage .. "% "))
     end
 
 })
@@ -187,8 +187,8 @@ tempicon:connect_signal('mouse::leave', function () naughty.destroy(showtempinfo
 -- Redshift widget
 local myredshift = wibox.widget{
     checked      = false,
-    check_color  = "#EB8F8F",
-    border_color = "#EB8F8F",
+    check_color  = "#ff0000",
+    border_color = "#ff0000",
     border_width = 1,
     shape        = gears.shape.circle,
     widget       = wibox.widget.checkbox
@@ -229,7 +229,7 @@ local pkgicon = wibox.widget.imagebox(beautiful.pkg_icon)
 pkgwidget = wibox.widget.textbox()
 awful.widget.watch("checkupdates",15,function(widget, stdout)
 		if stdout == "" then
-				widget:set_markup_silently("0 ")
+				widget:set_markup_silently(lain_markup.fontfg(beautiful.font,"#ffffff","0 "))
 		else
 				-- Count up the updates
 				--local count
@@ -246,10 +246,10 @@ pkgicon:connect_signal('mouse::enter', function ()
 				local pkginfo = ""
 				if stdout == "" then
 						-- No updates
-                                                pkginfo = utilities.notify_me("Package List:","No Updates found")
+                                                pkginfo = utilities.notify_me("Package List:","No Updates Found")
 				else
 						-- Display list of updates
-                                                pkginfo = utilities.notify_me("Package List:", stdout)
+						pkginfo = utilities.notify_me("Package List:", stdout)
 				end
 		end)
 end)
@@ -391,23 +391,22 @@ awful.screen.connect_for_each_screen(function(s)
         { 
 		-- Right widgets
         layout = wibox.layout.fixed.horizontal,
-		spacer,
-		arrow("alpha","#F99E6C"),
-		wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
-		arrow("#F99E6C","#ff0000"),
-		wibox.container.background(wibox.container.margin(wibox.widget {myredshift_stack, layout = wibox.layout.align.horizontal }, 3, 4), "#ff0000"),
-		arrow("#ff0000", "#BD7533"),
-                wibox.container.background(wibox.container.margin(wibox.widget {volicon, volwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
-		arrow("#BD7533","#FF79C6"),
-		wibox.container.background(wibox.container.margin(wibox.widget {pkgicon, pkgwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#FF79C6"),
-	        arrow("#FF79C6","#777E76"),
-		wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
-		arrow("#777E76", "#4B696D"),
-                wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpuwidget.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B696D"),
-	        arrow("#4B696D", "#4B3B51"),
-		wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
-	        arrow("#4B3B51",beautiful.bg_urgent),
-		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.bg_urgent),
+                arrow("alpha",beautiful.border_focus),
+		wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.border_focus),
+		arrow(beautiful.border_focus,"alpha"),
+		wibox.container.background(wibox.container.margin(wibox.widget {myredshift_stack, layout = wibox.layout.align.horizontal }, 3, 4), "alpha"),
+		arrow("alpha",beautiful.border_focus),
+                wibox.container.background(wibox.container.margin(wibox.widget {volicon, volwidget, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.border_focus),
+		arrow(beautiful.border_focus,"alpha"),
+		wibox.container.background(wibox.container.margin(wibox.widget {pkgicon, pkgwidget, layout = wibox.layout.align.horizontal }, 3, 4), "alpha"),
+	        arrow("alpha",beautiful.border_focus),
+		wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.border_focus),
+		arrow(beautiful.border_focus,"alpha"),
+                wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpuwidget.widget, layout = wibox.layout.align.horizontal }, 3, 4), "alpha"),
+	        arrow("alpha",beautiful.border_focus),
+		wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.border_focus),
+	        arrow(beautiful.border_focus,"alpha"),
+		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), alpha),
 		spacer_small,
                 wibox.widget.systray(),
         },

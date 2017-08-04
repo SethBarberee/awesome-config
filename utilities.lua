@@ -32,33 +32,15 @@ function utilities.run_once(prg, arg_string, pname, s, tag)
     end
 end
 
--- Confirmation dialog
-function utilities.confirm_action(func, name)
-   awful.screen.focused().mywibox:set_bg(beautiful.bg_urgent)
-   awful.screen.focused().mywibox:set_fg(beautiful.fg_urgent)
-   awful.prompt.run {
-         prompt = name .. " [y/N] ",
-         textbox = awful.screen.focused().mypromptbox_conf.widget,
-         exe_callback = function (t)
-            if string.lower(t) == 'y' then
-               func()
-            end
-         end,
-         history_path = nil,
-         done_callback = function ()
-            awful.screen.focused().mywibox:set_bg(
-               beautiful.screen_highlight_bg_active)
-            awful.screen.focused().mywibox:set_fg(
-               beautiful.screen_highlight_fg_active)
-         end
-   }
-end
-
+-- Simple notification
 function utilities.notify_me(title,txt)
     naughty.notify({
-			title = title,
-			text = txt
-	})
+        icon = "/usr/share/icons/Adwaita/32x32/apps/preferences-desktop-accessibility.png",
+        title = title,
+	text = txt,
+        timeout = 2,
+        hover_timeout = 0.5
+    })
 end
 
 return utilities
