@@ -13,3 +13,6 @@
 [submodule "cyclefocus"]
 	path = cyclefocus
 	url = https://github.com/blueyed/awesome-cyclefocus
+[submodule "radical"]
+	path = radical
+	url = https://github.com/Elv13/radical

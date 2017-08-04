@@ -6,6 +6,7 @@ require("awful.autofocus")
 -- Widget and layout library
 local wibox = require("wibox")
 local vicious = require("vicious")
+local radical = require("radical")
 local lain = require("lain")
 local lain_markup = lain.util.markup
 local separators = lain.util.separators
@@ -105,6 +106,14 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", "~/.local/share/applications" }
 --- }}}
 
+ -- Radical Menu
+local menu = radical.context{}
+menu:add_item {text="osu-lazer",icon= beautiful.awesome_icon, button1=function() awful.spawn("osu-lazer") end}
+menu:add_item {text="Screen 9",icon= beautiful.awesome_icon}
+-- To add the menu to a widget:
+local mymenu = wibox.widget.textbox("Menu")
+mymenu:set_menu(menu,"button::pressed","3") -- 3 = right mouse button, 1 = left mouse button
+mymenu:set_tooltip("Radical Menu Test")
 
 -- {{{ Wibar
 -- Create a textclock widget
@@ -234,13 +243,13 @@ awful.widget.watch("checkupdates",15,function(widget, stdout)
  end,pkgwidget)
 pkgicon:connect_signal('mouse::enter', function ()
 		awful.spawn.easy_async_with_shell("checkupdates", function(stdout,stderr,exitreason,exitcode)
-				local pkginfo
+				local pkginfo = ""
 				if stdout == "" then
 						-- No updates
 						pkginfo = naughty.notify({
 								title = "Package List:",
 								text = "No updates found",
-								timeout = 0,
+								timeout = 2,
 								hover_timeout = 0.5
 						})
 				else
@@ -248,7 +257,7 @@ pkgicon:connect_signal('mouse::enter', function ()
 						pkginfo = naughty.notify({
 								title = "Package List:",
 								text = stdout,
-								timeout = 0,
+								timeout = 2,
 								hover_timeout = 0.5
 						})
 				end
@@ -365,16 +374,27 @@ awful.screen.connect_for_each_screen(function(s)
 
     -- Create the wibox
     s.mywibox = awful.wibar({ position = "bottom", screen = s })
+    s.utilbar = awful.wibar({ position = "top", screen = s})
+
+    s.utilbar:setup {
+    layout = wibox.layout.align.horizontal,
+    nil,
+    nil,
+        {
+        layout = wibox.layout.fixed.horizontal,
+            wibox.container.background(wibox.container.margin(wibox.widget {mymenu, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
+        },
+    }
 
     s.mywibox:setup {
         layout = wibox.layout.align.horizontal,
         { 
 		-- Left widgets
         layout = wibox.layout.fixed.horizontal,
-        mylauncher,
+                mylauncher,
 		spacer_small,
-        s.mytaglist,
-        s.mypromptbox,
+                s.mytaglist,
+                s.mypromptbox,
 		spacer_small,
         },
         s.mytasklist, -- Middle widget
@@ -387,19 +407,19 @@ awful.screen.connect_for_each_screen(function(s)
 		arrow("#F99E6C","#ff0000"),
 		wibox.container.background(wibox.container.margin(wibox.widget {myredshift_stack, layout = wibox.layout.align.horizontal }, 3, 4), "#ff0000"),
 		arrow("#ff0000", "#BD7533"),
-        wibox.container.background(wibox.container.margin(wibox.widget {volicon, volwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
+                wibox.container.background(wibox.container.margin(wibox.widget {volicon, volwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
 		arrow("#BD7533","#FF79C6"),
 		wibox.container.background(wibox.container.margin(wibox.widget {pkgicon, pkgwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#FF79C6"),
-	    arrow("#FF79C6","#777E76"),
+	        arrow("#FF79C6","#777E76"),
 		wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
 		arrow("#777E76", "#4B696D"),
-        wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpuwidget.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B696D"),
-	    arrow("#4B696D", "#4B3B51"),
+                wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpuwidget.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B696D"),
+	        arrow("#4B696D", "#4B3B51"),
 		wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
-	    arrow("#4B3B51",beautiful.bg_urgent),
+	        arrow("#4B3B51",beautiful.bg_urgent),
 		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.bg_urgent),
 		spacer_small,
-        wibox.widget.systray(),
+                wibox.widget.systray(),
         },
     }
 end)

@@ -78,10 +78,3 @@ awful.tag.add("IX", {
     layout = awful.layout.suit.tile,
     screen = s,
 })
-
-awful.tag.add("X", {
-    --icon = "/path/to/icon2.png",
-    layout = awful.layout.suit.tile,
-    screen = s,
-})
-
