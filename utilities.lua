@@ -35,9 +35,9 @@ end
 -- Simple notification
 function utilities.notify_me(title,txt)
     naughty.notify({
-        icon = "/usr/share/icons/Adwaita/32x32/apps/preferences-desktop-accessibility.png",
+        icon = "/usr/share/icons/HighContrast/32x32/apps/system-software-update.png",
         title = title,
-	text = txt,
+        text = txt,
         timeout = 2,
         hover_timeout = 0.5
     })

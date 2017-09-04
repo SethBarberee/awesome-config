@@ -103,7 +103,7 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 
 -- Menubar configuration
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
-menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", "~/.local/share/applications" }
+menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", ".local/share/applications" }
 --- }}}
 
  -- Radical Menu
@@ -164,18 +164,19 @@ local function disptemp()
         screen = screen
     }
 
-    f = io.popen("sensors | grep Package && sensors | grep Core")
+    f = io.popen("sensors | grep Core")
     infos = f:read("*all")
     f:close()
 
     showtempinfo = naughty.notify( {
         text    = infos,
         title   = "CPU Temperatures",
+        icon    = "/usr/share/icons/HighContrast/32x32/devices/computer.png",
         timeout = 0,
         hover_timeout = 0.5,
         position = "top_right",
         margin = 8,
-        height = 110,
+        height = 100,
         width = 460,
         screen  = capi.mouse.screen })
 end
@@ -221,8 +222,7 @@ local myredshift_stack = wibox.widget{
 local volicon = wibox.widget.imagebox(beautiful.vol_icon)
 volwidget = wibox.widget.textbox()
 awful.widget.watch("ponymix get-volume",5,function(widget, stdout)
-		widget:set_text(" " .. stdout)
-end,volwidget)
+    widget:set_text(" " .. stdout)end,volwidget)
 
 -- Create the package widget
 local pkgicon = wibox.widget.imagebox(beautiful.pkg_icon)
