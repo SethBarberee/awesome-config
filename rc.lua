@@ -22,7 +22,7 @@ local revelation = require("revelation")
 cyclefocus = require("cyclefocus")
 cyclefocus.debug_use_naughty_notify = 0
 -- Utilites lua for useful functions
-local utilities = require("utilities")
+local util = require("util")
 -- Common library
 local common = require("awful.widget.common")
 -- Enable VIM help for hotkeys widget when client with matching name is opened:
@@ -30,8 +30,7 @@ require("awful.hotkeys_popup.keys.vim")
 
 local config_path = awful.util.get_configuration_dir()
 
-dofile(config_path .. "error-handling.lua")
-dofile(config_path .. "tag.lua")
+dofile(config_path .. "/util/tag.lua")
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
@@ -107,9 +106,17 @@ menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", ".local/share/appl
 --- }}}
 
  -- Radical Menu
-local menu = radical.context{}
-menu:add_item {text="osu-lazer",icon= beautiful.awesome_icon, button1=function() awful.spawn("osu-lazer") end}
-menu:add_item {text="Screen 9",icon= beautiful.awesome_icon}
+local menu = radical.context {
+    bg_focus = beautiful.border_focus,
+    fg_focus = beautiful.border_normal,
+    style = radical.style.classic,
+    item_style = radical.item.style.arrow_3d,
+    layout = radical.layout.vertical
+}
+menu:add_item {text="osu-lazer",button1=function() awful.spawn("osu-lazer") end}
+menu:add_item {text="Testing Radical"}
+menu:add_item {text="spotify",button1=function() awful.spawn("spotify") end}
+menu:add_item {text="Lock Screen",button1=function() awful.spawn("light-locker-command -l") end}
 -- To add the menu to a widget:
 local mymenu = wibox.widget.textbox("Menu")
 mymenu:set_menu(menu,"button::pressed","3") -- 3 = right mouse button, 1 = left mouse button
@@ -221,8 +228,11 @@ local myredshift_stack = wibox.widget{
 --Create the volume widget
 local volicon = wibox.widget.imagebox(beautiful.vol_icon)
 volwidget = wibox.widget.textbox()
-awful.widget.watch("ponymix get-volume",5,function(widget, stdout)
+awful.widget.watch("ponymix get-volume",1,function(widget, stdout)
     widget:set_text(" " .. stdout)end,volwidget)
+volicon:connect_signal('mouse::enter', function ()
+    awful.spawn.with_shell("ponymix toggle")
+end)
 
 -- Create the package widget
 local pkgicon = wibox.widget.imagebox(beautiful.pkg_icon)
@@ -324,17 +334,6 @@ local function set_wallpaper(s)
     end
 end
 
---local function set_wallpaper(s)
-    -- Wallpaper
- --   if beautiful.wallpaper then
---        local wallpaper = beautiful.wallpaper
---        -- If wallpaper is a function, call it with the screen
---        if type(wallpaper) == "function" then
---            wallpaper = wallpaper(s)
---        end
---        gears.wallpaper.maximized(wallpaper, s, true)
---    end
---end
 local wlpr_timer = timer({timeout = 60})
 wlpr_timer:connect_signal("timeout", function() set_wallpaper(1) end)
 wlpr_timer:start()
@@ -767,7 +766,8 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 -- {{{ Autostart section
-utilities.run_once("ckb")
-utilities.run_once("thunar --daemon")
-utilities.run_once("light-locker")
+util.utilities.run_once("ckb")
+util.utilities.run_once("radeon-profile")
+util.utilities.run_once("thunar --daemon")
+util.utilities.run_once("light-locker")
 -- }}}

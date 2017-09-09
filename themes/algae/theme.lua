@@ -1,5 +1,6 @@
 ---------------------------
 -- Algae awesome theme --
+-- Author: Seth Barberee --
 ---------------------------
 
 local theme_assets = require("beautiful.theme_assets")
@@ -16,49 +17,38 @@ local theme = {}
 
 theme.font          = "xft: Hack 9"
 
+-- Background Settings
 theme.bg_normal     = "#282A36"
 theme.bg_focus      = theme.bg_normal
 theme.bg_urgent     = "#ff0000"
 theme.bg_minimize   = "#444444"
 theme.bg_systray    = theme.bg_normal
 
+-- Foreground Settings
 theme.fg_normal     = "#F8F8F8"
 theme.fg_focus      = "#50FA7B"
 theme.fg_urgent     = "#ffffff"
 theme.fg_minimize   = "#ffffff"
 
 theme.useless_gap   = dpi(4)
+
+-- Window Border Settings
 theme.border_width  = dpi(3)
 theme.border_normal = "#000000"
 theme.border_focus  = "#50FA7B"
 theme.border_marked = "#91231c"
 
+-- Window Tooltip Settings
 theme.tooltip_border_color = theme.border_normal
 theme.tooltip_bg = theme.bg_normal
 theme.tooltip_fg = theme.fg_normal
 
+-- Hotkey Settings
 theme.hotkeys_bg = theme.bg_normal
 theme.hotkeys_fg = theme.fg_normal
 theme.hotkeys_border_color = theme.border_focus
 
--- There are other variable sets
--- overriding the default one when
--- defined, the sets are:
--- taglist_[bg|fg]_[focus|urgent|occupied|empty|volatile]
--- tasklist_[bg|fg]_[focus|urgent]
--- titlebar_[bg|fg]_[normal|focus]
--- tooltip_[font|opacity|fg_color|bg_color|border_width|border_color]
--- mouse_finder_[color|timeout|animate_timeout|radius|factor]
--- prompt_[fg|bg|fg_cursor|bg_cursor|font]
--- hotkeys_[bg|fg|border_width|border_color|shape|opacity|modifiers_fg|label_bg|label_fg|group_margin|font|description_font]
--- Example:
---theme.taglist_bg_focus = "#ff0000"
-
--- Generate taglist squares:
---theme.taglist_squares_sel = theme_path .. "taglist/squarefw.png"
---theme.taglist_squares_unsel = theme_path .. "taglist/squarew.png"
-
-
+-- Notification Settings
 -- notification_font
 -- notification_[bg|fg]
 -- notification_[width|height|margin]
@@ -78,7 +68,7 @@ theme.menu_submenu_icon = themes_dir.."default/submenu.png"
 theme.menu_height = dpi(15)
 theme.menu_width  = dpi(100)
 
--- Define the image to load
+-- Titlebar icons
 theme.titlebar_close_button_normal = themes_dir.."default/titlebar/close_normal.png"
 theme.titlebar_close_button_focus  = themes_dir.."default/titlebar/close_focus.png"
 
@@ -105,7 +95,13 @@ theme.titlebar_maximized_button_focus_inactive  = themes_dir.."default/titlebar/
 theme.titlebar_maximized_button_normal_active = themes_dir.."default/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active  = themes_dir.."default/titlebar/maximized_focus_active.png"
 
--- Use default white icons
+-- Recolor titlebar icons to be more algae
+theme = theme_assets.recolor_titlebar_normal(theme, theme.fg_normal)
+theme = theme_assets.recolor_titlebar_focus(theme, theme.fg_focus)
+theme = theme_assets.recolor_layout(theme, theme.fg_normal)
+
+
+-- Layout Icon Settings
 theme.layout_fairh = themes_dir.."default/layouts/fairhw.png"
 theme.layout_fairv = themes_dir.."default/layouts/fairvw.png"
 theme.layout_floating  = themes_dir.."default/layouts/floatingw.png"
@@ -123,7 +119,7 @@ theme.layout_cornerne = themes_dir.."default/layouts/cornernew.png"
 theme.layout_cornersw = themes_dir.."default/layouts/cornersww.png"
 theme.layout_cornerse = themes_dir.."default/layouts/cornersew.png"
 
--- Lain layout icons
+-- Lain Layout Icon Settings
 theme.layout_termfair    = lain_icons .. "termfair.png"
 theme.layout_centerfair  = lain_icons .. "centerfair.png"  -- termfair.center
 theme.layout_cascade     = lain_icons .. "cascade.png"

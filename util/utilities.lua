@@ -5,6 +5,7 @@ local beautiful = require("beautiful")
 utilities = {}
 
 -- Run a program once
+
 function utilities.run_once(prg, arg_string, pname, s, tag)
     if not prg then
         do return nil end
@@ -31,6 +32,9 @@ function utilities.run_once(prg, arg_string, pname, s, tag)
        awful.spawn.with_shell(cmd)
     end
 end
+
+
+
 
 -- Simple notification
 function utilities.notify_me(title,txt)
