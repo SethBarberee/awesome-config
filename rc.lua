@@ -151,7 +151,8 @@ local cpuwidget = lain.widget.cpu({
 cpufreq = wibox.widget.textbox()
 vicious.register(cpufreq, vicious.widgets.cpufreq,
  function(widget,args)
-  return string.format("%s GHz ", args[2])
+     local speed = tonumber(string.format("%3.3f",args[2]))
+  return string.format("%s GHz ", speed)
  end,5,"cpu0")
 
 -- Create CPU temp widget
@@ -361,7 +362,7 @@ awful.screen.connect_for_each_screen(function(s)
     -- Create a tasklist widget
     s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
 
-    -- Create the wibox
+--{{{ Create the wibox
     s.mywibox = awful.wibar({ position = "bottom", screen = s })
     s.utilbar = awful.wibar({ position = "top", screen = s})
 
@@ -378,7 +379,7 @@ awful.screen.connect_for_each_screen(function(s)
     s.mywibox:setup {
         layout = wibox.layout.align.horizontal,
         { 
-		-- Left widgets
+	-- Left widgets
         layout = wibox.layout.fixed.horizontal,
                 mylauncher,
 		spacer_small,
@@ -388,7 +389,7 @@ awful.screen.connect_for_each_screen(function(s)
         },
         s.mytasklist, -- Middle widget
         { 
-		-- Right widgets
+	-- Right widgets
         layout = wibox.layout.fixed.horizontal,
 		spacer,
 		arrow("alpha","#F99E6C"),
@@ -407,7 +408,7 @@ awful.screen.connect_for_each_screen(function(s)
 		wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
 	        arrow("#4B3B51",beautiful.bg_urgent),
 		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.bg_urgent),
-		spacer_small,
+                arrow(beautiful.bg_urgent, "alpha"),
                 wibox.widget.systray(),
         },
     }

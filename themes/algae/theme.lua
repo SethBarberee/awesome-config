@@ -8,7 +8,6 @@ local xresources = require("beautiful.xresources")
 local gears = require("gears")
 local dpi = xresources.apply_dpi
 
-local gfs = require("gears.filesystem")
 local algae_path = os.getenv("HOME") .. "/.config/awesome/themes/algae/"
 local themes_dir = os.getenv("HOME") .. "/.config/awesome/themes/"
 local lain_icons = os.getenv("HOME") .."/.config/awesome/lain/icons/layout/default/"
@@ -65,8 +64,8 @@ theme.notification_opacity = 0.94
 -- menu_[bg|fg]_[normal|focus]
 -- menu_[border_color|border_width]
 theme.menu_submenu_icon = themes_dir.."default/submenu.png"
-theme.menu_height = dpi(15)
-theme.menu_width  = dpi(100)
+theme.menu_height = dpi(16)
+theme.menu_width  = dpi(130)
 
 -- Titlebar icons
 theme.titlebar_close_button_normal = themes_dir.."default/titlebar/close_normal.png"
@@ -99,6 +98,9 @@ theme.titlebar_maximized_button_focus_active  = themes_dir.."default/titlebar/ma
 theme = theme_assets.recolor_titlebar_normal(theme, theme.fg_normal)
 theme = theme_assets.recolor_titlebar_focus(theme, theme.fg_focus)
 theme = theme_assets.recolor_layout(theme, theme.fg_normal)
+
+theme.tasklist_align = "center"
+theme.tasklist_disable_icon = true
 
 
 -- Layout Icon Settings
