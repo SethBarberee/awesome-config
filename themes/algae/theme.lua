@@ -3,14 +3,26 @@
 -- Author: Seth Barberee --
 ---------------------------
 
+local awful = require("awful")
+local gears = require("gears")
+local timer = require("gears.timer")
 local theme_assets = require("beautiful.theme_assets")
 local xresources = require("beautiful.xresources")
-local gears = require("gears")
 local dpi = xresources.apply_dpi
+local os, math, string = os, math, string
 
 local algae_path = os.getenv("HOME") .. "/.config/awesome/themes/algae/"
 local themes_dir = os.getenv("HOME") .. "/.config/awesome/themes/"
 local lain_icons = os.getenv("HOME") .."/.config/awesome/lain/icons/layout/default/"
+
+--Wallpapers: [1] = morning, [2] = daytime, [3] = evening, [4] = night
+local wallpapers = {
+        algae_path .. "wallpapers/morning.jpg",
+        algae_path .. "wallpapers/day.png",
+        algae_path .. "wallpapers/evening.jpg",
+        algae_path .. "wallpapers/night.jpg"
+}
+
 
 local theme = {}
 
@@ -138,7 +150,32 @@ theme.vol_icon = algae_path .. "icons/volume.png"
 
 
 -- Wallpaper if not using wallpaper setter
-theme.wallpaper = algae_path .. "background.png"
+-- theme.wallpaper = algae_path .. "background.png"
+
+theme.wallpaper = function(s)
+    local hr = tonumber(string.sub(os.date("%R"), 1, 2))
+    if hr >= 0 and hr <= 5 then --night
+        gears.wallpaper.maximized(wallpapers[4], s, true)
+        awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[4])
+    elseif hr >= 6 and hr <= 10 then -- morning
+        gears.wallpaper.maximized(wallpapers[1], s, true)
+        awful.spawn.with_shell("wal/wal -x -n -q -i" .. wallpapers[1])
+    elseif hr >= 11 and hr <= 15 then -- day
+        gears.wallpaper.maximized(wallpapers[2], s, true)
+        awful.spawn.with_shell("wal/wal -x -n -q -i" .. wallpapers[2])
+    elseif hr >= 16 and hr <= 18 then -- evening
+        gears.wallpaper.maximized(wallpapers[3], s, true)
+        awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[3])
+    elseif hr >= 19 and hr <= 23 then -- night
+        gears.wallpaper.maximized(wallpapers[4], s, true)
+        awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[4])
+    end
+end
+ 
+local wlpr_timer = timer({timeout = 60})
+wlpr_timer:connect_signal("timeout", function() set_wallpaper(1) end)
+wlpr_timer:start()
+
 
 
 -- Generate Awesome icon:

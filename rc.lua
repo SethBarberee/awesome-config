@@ -37,14 +37,6 @@ dofile(config_path .. "/util/tag.lua")
 beautiful.init(config_path.. "themes/algae/theme.lua")
 revelation.init({charorder = "1234567890jkluiopyhnmfdsatgvcewqzx"})
 
--- Wallpapers: [1] = morning, [2] = daytime, [3] = evening, [4] = night
-wallpapers = {
-    config_path.."themes/algae/wallpapers/morning.jpg",
-    config_path.."themes/algae/wallpapers/day.png",
-    config_path.."themes/algae/wallpapers/evening.jpg",
-    config_path.."themes/algae/wallpapers/night.jpg"
-}
-
 -- This is used later as the default terminal and editor to run.
 terminal = "urxvt"
 editor = os.getenv("EDITOR") or "nvim"
@@ -316,28 +308,16 @@ local tasklist_buttons = gears.table.join(
     end))
 
 local function set_wallpaper(s)
-    local hr = tonumber(string.sub(os.date("%R"), 1, 2))
-    if hr >= 0 and hr <= 5 then --night
-        gears.wallpaper.maximized(wallpapers[4], s, true)
-		awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[4])
-    elseif hr >= 6 and hr <= 10 then -- morning
-        gears.wallpaper.maximized(wallpapers[1], s, true)
-		awful.spawn.with_shell("wal/wal -x -n -q -i" .. wallpapers[1])
-    elseif hr >= 11 and hr <= 15 then -- day
-        gears.wallpaper.maximized(wallpapers[2], s, true)
-		awful.spawn.with_shell("wal/wal -x -n -q -i" .. wallpapers[2])
-    elseif hr >= 16 and hr <= 18 then -- evening
-        gears.wallpaper.maximized(wallpapers[3], s, true)
-		awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[3])
-    elseif hr >= 19 and hr <= 23 then -- night
-        gears.wallpaper.maximized(wallpapers[4], s, true)
-		awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[4])
+    -- Wallpaper
+    if beautiful.wallpaper then
+        local wallpaper = beautiful.wallpaper
+        -- If wallpaper is a function, call it with the screen
+        if type(wallpaper) == "function" then
+            wallpaper = wallpaper(s)
+        end
+        gears.wallpaper.maximized(wallpaper, s, true)
     end
 end
-
-local wlpr_timer = timer({timeout = 60})
-wlpr_timer:connect_signal("timeout", function() set_wallpaper(1) end)
-wlpr_timer:start()
 
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
