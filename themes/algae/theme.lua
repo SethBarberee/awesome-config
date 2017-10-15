@@ -26,7 +26,7 @@ local wallpapers = {
 
 local theme = {}
 
-theme.font          = "xft: Hack 9"
+theme.font          = "xft: Knack Nerd Font Mono 10"
 
 -- Background Settings
 theme.bg_normal     = "#282A36"
@@ -111,6 +111,7 @@ theme = theme_assets.recolor_titlebar_normal(theme, theme.fg_normal)
 theme = theme_assets.recolor_titlebar_focus(theme, theme.fg_focus)
 theme = theme_assets.recolor_layout(theme, theme.fg_normal)
 
+-- Tasklist Options
 theme.tasklist_align = "center"
 theme.tasklist_disable_icon = true
 
@@ -156,28 +157,22 @@ theme.wallpaper = function(s)
     local hr = tonumber(string.sub(os.date("%R"), 1, 2))
     if hr >= 0 and hr <= 5 then --night
         gears.wallpaper.maximized(wallpapers[4], s, true)
-        awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[4])
+        awful.spawn.with_shell("~/wal/wal -n -q -i" .. wallpapers[4])
     elseif hr >= 6 and hr <= 10 then -- morning
         gears.wallpaper.maximized(wallpapers[1], s, true)
-        awful.spawn.with_shell("wal/wal -x -n -q -i" .. wallpapers[1])
+        awful.spawn.with_shell("~/wal/wal -x -n -q -i" .. wallpapers[1])
     elseif hr >= 11 and hr <= 15 then -- day
         gears.wallpaper.maximized(wallpapers[2], s, true)
-        awful.spawn.with_shell("wal/wal -x -n -q -i" .. wallpapers[2])
+        awful.spawn.with_shell("~/wal/wal -x -n -q -i" .. wallpapers[2])
     elseif hr >= 16 and hr <= 18 then -- evening
         gears.wallpaper.maximized(wallpapers[3], s, true)
-        awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[3])
+        awful.spawn.with_shell("~/wal/wal -n -q -i" .. wallpapers[3])
     elseif hr >= 19 and hr <= 23 then -- night
         gears.wallpaper.maximized(wallpapers[4], s, true)
-        awful.spawn.with_shell("wal/wal -n -q -i" .. wallpapers[4])
+        awful.spawn.with_shell("~/wal/wal -n -q -i" .. wallpapers[4])
     end
 end
  
-local wlpr_timer = timer({timeout = 60})
-wlpr_timer:connect_signal("timeout", function() set_wallpaper(1) end)
-wlpr_timer:start()
-
-
-
 -- Generate Awesome icon:
 theme.awesome_icon = theme_assets.awesome_icon(
     theme.menu_height, theme.bg_focus, theme.fg_focus

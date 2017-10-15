@@ -33,22 +33,14 @@ local config_path = awful.util.get_configuration_dir()
 dofile(config_path .. "/util/tag.lua")
 
 -- {{{ Variable definitions
--- Themes define colours, icons, font and wallpapers.
-beautiful.init(config_path.. "themes/algae/theme.lua")
-revelation.init({charorder = "1234567890jkluiopyhnmfdsatgvcewqzx"})
-
--- This is used later as the default terminal and editor to run.
 terminal = "urxvt"
+theme = "algae"
 editor = os.getenv("EDITOR") or "nvim"
 editor_cmd = terminal .. " -e " .. editor
-
--- Default modkey.
--- Usually, Mod4 is the key with a logo between Control and Alt.
--- If you do not like this or do not have such a key,
--- I suggest you to remap Mod4 to another key using xmodmap or other tools.
--- However, you can use another modifier like Mod1, but it may interact with others.
 modkey = "Mod1"
-
+-- Themes define colours, icons, font and wallpapers.
+beautiful.init(config_path.. "themes/".. theme .. "/theme.lua")
+revelation.init({charorder = "1234567890jkluiopyhnmfdsatgvcewqzx"})
 -- }}}
 
 -- {{{ Helper functions
@@ -176,7 +168,7 @@ local function disptemp()
         hover_timeout = 0.5,
         position = "top_right",
         margin = 8,
-        height = 100,
+        height = 110,
         width = 460,
         screen  = capi.mouse.screen })
 end
@@ -220,12 +212,38 @@ local myredshift_stack = wibox.widget{
 
 --Create the volume widget
 local volicon = wibox.widget.imagebox(beautiful.vol_icon)
-volwidget = wibox.widget.textbox()
-awful.widget.watch("ponymix get-volume",1,function(widget, stdout)
-    widget:set_text(" " .. stdout)end,volwidget)
-volicon:connect_signal('mouse::enter', function ()
-    awful.spawn.with_shell("ponymix toggle")
-end)
+
+local volume = lain.widget.pulse {
+    settings = function()
+        vlevel = " " .. volume_now.left .. "% | " .. volume_now.device
+        if volume_now.muted == "yes" then
+            vlevel = vlevel .. " M"
+        end
+        widget:set_markup(lain.util.markup(beautiful.fg_normal, vlevel))
+    end
+}
+-- Buttons actions for when interacting with the volume widget
+volume.widget:buttons(awful.util.table.join(
+    awful.button({}, 1, function() -- left click
+        awful.spawn("pavucontrol")
+    end),
+    awful.button({}, 2, function() -- middle click
+        awful.spawn("ponymix set-volume 100")
+        volume.update()
+    end),
+    awful.button({}, 3, function() -- right click
+        awful.spawn("ponymix toggle")
+        volume.update()
+    end),
+    awful.button({}, 4, function() -- scroll up
+        awful.spawn("ponymix increase 1")
+        volume.update()
+    end),
+    awful.button({}, 5, function() -- scroll down
+        awful.spawn("ponymix decrease 1")
+        volume.update()
+    end)
+))
 
 -- Create the package widget
 local pkgicon = wibox.widget.imagebox(beautiful.pkg_icon)
@@ -314,10 +332,15 @@ local function set_wallpaper(s)
         -- If wallpaper is a function, call it with the screen
         if type(wallpaper) == "function" then
             wallpaper = wallpaper(s)
+        else
+            gears.wallpaper.maximized(wallpaper, s, true)
         end
-        gears.wallpaper.maximized(wallpaper, s, true)
     end
 end
+
+local wlpr_timer = timer({timeout = 60})
+wlpr_timer:connect_signal("timeout", function() set_wallpaper(1) end)
+wlpr_timer:start()
 
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
@@ -377,7 +400,7 @@ awful.screen.connect_for_each_screen(function(s)
 		arrow("#F99E6C","#ff0000"),
 		wibox.container.background(wibox.container.margin(wibox.widget {myredshift_stack, layout = wibox.layout.align.horizontal }, 3, 4), "#ff0000"),
 		arrow("#ff0000", "#BD7533"),
-                wibox.container.background(wibox.container.margin(wibox.widget {volicon, volwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
+                wibox.container.background(wibox.container.margin(wibox.widget {volicon, volume, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
 		arrow("#BD7533","#FF79C6"),
 		wibox.container.background(wibox.container.margin(wibox.widget {pkgicon, pkgwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#FF79C6"),
 	        arrow("#FF79C6","#777E76"),
@@ -672,8 +695,8 @@ awful.rules.rules = {
     properties = { screen = 1, tag = "II", floating = false } },
 
 	-- Set Spotify to always map on the tag named "II" on screen 2
-	{ rule = { class = "Spotify" },
-	properties = { screen = 1, tag = "III"} },
+    { rule = { class = "Spotify" },
+    properties = { screen = 1, tag = "III"} },
 }
 -- }}}
 
