@@ -150,27 +150,25 @@ local cputemp = lain.widget.temp({
 
 
 local function disptemp()
-    local f, infos
     local capi = {
         mouse = mouse,
         screen = screen
     }
 
-    f = io.popen("sensors | grep Core")
-    infos = f:read("*all")
-    f:close()
-
-    showtempinfo = naughty.notify( {
-        text    = infos,
-        title   = "CPU Temperatures",
-        icon    = "/usr/share/icons/HighContrast/32x32/devices/computer.png",
-        timeout = 0,
-        hover_timeout = 0.5,
-        position = "top_right",
-        margin = 8,
-        height = 110,
-        width = 460,
-        screen  = capi.mouse.screen })
+    local f = "sensors | grep Core"
+    awful.spawn.easy_async_with_shell(f, function(stdout, stderr, reason, exit_code)
+        showtempinfo = naughty.notify( {
+            text    = stdout,
+            title   = "CPU Temperatures",
+            icon    = "/usr/share/icons/HighContrast/32x32/devices/computer.png",
+            timeout = 0,
+            hover_timeout = 0.5,
+            position = "top_right",
+            margin = 8,
+            height = 110,
+            width = 460,
+            screen  = capi.mouse.screen })
+    end)
 end
 
 
