@@ -37,7 +37,7 @@ terminal = "urxvt"
 theme = "algae"
 editor = os.getenv("EDITOR") or "nvim"
 editor_cmd = terminal .. " -e " .. editor
-modkey = "Mod1"
+modkey = "Mod4"
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(config_path.. "themes/".. theme .. "/theme.lua")
 revelation.init({charorder = "1234567890jkluiopyhnmfdsatgvcewqzx"})
@@ -89,23 +89,6 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", ".local/share/applications" }
 --- }}}
 
- -- Radical Menu
-local menu = radical.context {
-    bg_focus = beautiful.border_focus,
-    fg_focus = beautiful.border_normal,
-    style = radical.style.classic,
-    item_style = radical.item.style.arrow_3d,
-    layout = radical.layout.vertical
-}
-menu:add_item {text="osu-lazer",button1=function() awful.spawn("osu-lazer") end}
-menu:add_item {text="Testing Radical"}
-menu:add_item {text="spotify",button1=function() awful.spawn("spotify") end}
-menu:add_item {text="Lock Screen",button1=function() awful.spawn("light-locker-command -l") end}
--- To add the menu to a widget:
-local mymenu = wibox.widget.textbox("Menu")
-mymenu:set_menu(menu,"button::pressed","3") -- 3 = right mouse button, 1 = left mouse button
-mymenu:set_tooltip("Radical Menu Test")
-
 -- {{{ Wibar
 -- Create a textclock widget
 local calendaricon = wibox.widget.imagebox(beautiful.calendar_icon)
@@ -120,14 +103,6 @@ local calendar = lain.widget.calendar({
 	  fg = beautiful.fg_focus,
 	  bg = beautiful.bg_normal
 	}
-
-})
--- Create the cpu usage widget
-local cpuicon = wibox.widget.imagebox(beautiful.cpu_icon)
-local cpuwidget = lain.widget.cpu({
-    settings = function()
-        widget:set_markup(lain_markup.font(beautiful.font, " " .. cpu_now.usage .. "% "))
-    end
 
 })
 
@@ -194,9 +169,9 @@ lain.widget.contrib.redshift:attach(
     myredshift,
 	function (active)
 		if active then
-		    myredshift_text:set_markup(lain_markup(beautiful.bg_normal, "<b>R</b>"))
+		    myredshift_text:set_markup(lain_markup("#000000", "<b>R</b>"))
 		else
-		    myredshift_text:set_markup(lain_markup(beautiful.fg_normal, "R"))
+		    myredshift_text:set_markup(lain_markup("#ffffff", "R"))
         end
 		    myredshift.checked = active
 	end
@@ -207,37 +182,6 @@ local myredshift_stack = wibox.widget{
     myredshift_text,
     layout = wibox.layout.stack
 }
-
--- Create the package widget
-local pkgicon = wibox.widget.imagebox(beautiful.pkg_icon)
-pkgwidget = wibox.widget.textbox()
-awful.widget.watch("checkupdates",15,function(widget, stdout)
-		if stdout == "" then
-				widget:set_markup_silently("0 ")
-		else
-				-- Count up the updates
-				--local count
-				--for line in stdout:gmatch("[\n]+") do
-				--		count = count + 1
-				--end
-				-- Display the number
-				--widget:set_markup_silently(count)
-				widget:set_markup_silently("")
-		end
- end,pkgwidget)
-pkgicon:connect_signal('mouse::enter', function ()
-		awful.spawn.easy_async_with_shell("checkupdates", function(stdout,stderr,exitreason,exitcode)
-				local pkginfo = ""
-				if stdout == "" then
-						-- No updates
-                                                pkginfo = utilities.notify_me("Package List:","No Updates Found")
-				else
-						-- Display list of updates
-                                                pkginfo = utilities.notify_me("Package List:", stdout)
-				end
-		end)
-end)
-pkgicon:connect_signal('mouse::leave',function() naughty.destroy(pkginfo)end)
 
 -- Seperator
 local arrow = separators.arrow_left
@@ -349,22 +293,14 @@ awful.screen.connect_for_each_screen(function(s)
 		spacer,
 		arrow("alpha","#F99E6C"),
 		wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
-		arrow("#F99E6C","#ff0000"),
-		wibox.container.background(wibox.container.margin(wibox.widget {myredshift_stack, layout = wibox.layout.align.horizontal }, 3, 4), "#ff0000"),
-		arrow("#ff0000", "#BD7533"),
-                wibox.container.background(wibox.container.margin(wibox.widget {volicon, volume, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
-		arrow("#BD7533","#FF79C6"),
-		wibox.container.background(wibox.container.margin(wibox.widget {pkgicon, pkgwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#FF79C6"),
-	        arrow("#FF79C6","#777E76"),
-		wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
-		arrow("#777E76", "#4B696D"),
-                wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpuwidget.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B696D"),
-	        arrow("#4B696D", "#4B3B51"),
+		arrow("#F99E6C","#777E76"),
+		wibox.container.background(wibox.container.margin(wibox.widget {beautiful.cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
+		arrow("#777E76", "#4B3B51"),
 		wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
-	        arrow("#4B3B51",beautiful.bg_urgent),
+	    arrow("#4B3B51",beautiful.bg_urgent),
 		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.bg_urgent),
-                arrow(beautiful.bg_urgent, "alpha"),
-                wibox.widget.systray(),
+        arrow(beautiful.bg_urgent, "alpha"),
+        wibox.widget.systray(),
         },
     }
 end)

@@ -187,39 +187,57 @@ theme.awesome_icon = theme_assets.awesome_icon(
 theme.icon_theme = "HighContrast"
 
 --Create the volume widget
-local volicon = wibox.widget.imagebox(theme.vol_icon)
+--local volicon = wibox.widget.imagebox(theme.vol_icon)
 
-theme.volume = lain.widget.pulse {
-    settings = function()
-        vlevel = " " .. volume_now.left .. "% | " .. volume_now.device
-        if volume_now.muted == "yes" then
-            vlevel = vlevel .. " M"
-        end
-        widget:set_markup(lain.util.markup(theme.fg_normal, vlevel))
-    end
-}
+--theme.volume = lain.widget.pulse {
+ --   settings = function()
+--        vlevel = " " .. volume_now.left .. "% | " .. volume_now.device
+--        if volume_now.muted == "yes" then
+--            vlevel = vlevel .. " M"
+--        end
+--        widget:set_markup(lain.util.markup(theme.fg_normal, vlevel))
+--    end
+--}
 -- Buttons actions for when interacting with the volume widget
-volume.widget:buttons(awful.util.table.join(
-    awful.button({}, 1, function() -- left click
-        awful.spawn("pavucontrol")
-    end),
-    awful.button({}, 2, function() -- middle click
-        awful.spawn("ponymix set-volume 100")
-        theme.volume.update()
-    end),
-    awful.button({}, 3, function() -- right click
-        awful.spawn("ponymix toggle")
-        theme.volume.update()
-    end),
-    awful.button({}, 4, function() -- scroll up
-        awful.spawn("ponymix increase 1")
-        theme.volume.update()
-    end),
-    awful.button({}, 5, function() -- scroll down
-        awful.spawn("ponymix decrease 1")
-        theme.volume.update()
-    end)
-))
+--theme.volume.widget:buttons(awful.util.table.join(
+--    awful.button({}, 1, function() -- left click
+ --       awful.spawn("pavucontrol")
+--    end),
+--    awful.button({}, 2, function() -- middle click
+--        awful.spawn("ponymix set-volume 100")
+--        theme.volume.update()
+--    end),
+--    awful.button({}, 3, function() -- right click
+--        awful.spawn("ponymix toggle")
+--        theme.volume.update()
+ --   end),
+ --   awful.button({}, 4, function() -- scroll up
+--        awful.spawn("ponymix increase 1")
+--        theme.volume.update()
+--    end),
+--    awful.button({}, 5, function() -- scroll down
+--        awful.spawn("ponymix decrease 1")
+--        theme.volume.update()
+--    end)
+--))
+--
+--
+-- Create the cpu usage widget
+--local cpuicon = wibox.widget.imagebox(theme.cpu_icon)
+--theme.cpuwidget = lain.widget.cpu({
+--    settings = function()
+--        widget:set_markup(lain_markup.font("Monospace 10", " " .. cpu_now.usage .. "% "))
+--    end
+--
+--})
+
+
+-- Temporary comment until wibar moving
+-- wibox.container.background(wibox.container.margin(wibox.widget {volicon, volume, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
+-- arrow(),
+--wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpuwidget.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B696D"),
+
+
 
 
 return theme
