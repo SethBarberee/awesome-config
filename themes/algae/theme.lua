@@ -52,12 +52,14 @@ theme.border_marked = "#91231c"
 -- Window Tooltip Settings
 theme.tooltip_border_color = theme.border_normal
 theme.tooltip_bg = theme.bg_normal
-theme.tooltip_fg = theme.fg_normal
+theme.tooltip_fg = theme.fg_focus
+theme.tooltip_shape = gears.shape.rounded_rect
 
 -- Hotkey Settings
 theme.hotkeys_bg = theme.bg_normal
 theme.hotkeys_fg = theme.fg_normal
 theme.hotkeys_border_color = theme.border_focus
+theme.hotkeys_shape = gears.shape.rounded_rect
 
 -- Notification Settings
 -- notification_font
@@ -66,7 +68,7 @@ theme.hotkeys_border_color = theme.border_focus
 -- notification_[border_color|border_width|shape|opacity]
 theme.notification_font = theme.font
 theme.notification_bg = theme.bg_normal
-theme.notification_fg = theme.fg_urgent
+theme.notification_fg = theme.fg_focus
 theme.notification_border_color = theme.border_tooltip
 theme.notification_border_width = theme.border_width
 theme.notification_shape = gears.shape.rounded_rect
