@@ -208,41 +208,6 @@ local myredshift_stack = wibox.widget{
     layout = wibox.layout.stack
 }
 
---Create the volume widget
-local volicon = wibox.widget.imagebox(beautiful.vol_icon)
-
-local volume = lain.widget.pulse {
-    settings = function()
-        vlevel = " " .. volume_now.left .. "% | " .. volume_now.device
-        if volume_now.muted == "yes" then
-            vlevel = vlevel .. " M"
-        end
-        widget:set_markup(lain.util.markup(beautiful.fg_normal, vlevel))
-    end
-}
--- Buttons actions for when interacting with the volume widget
-volume.widget:buttons(awful.util.table.join(
-    awful.button({}, 1, function() -- left click
-        awful.spawn("pavucontrol")
-    end),
-    awful.button({}, 2, function() -- middle click
-        awful.spawn("ponymix set-volume 100")
-        volume.update()
-    end),
-    awful.button({}, 3, function() -- right click
-        awful.spawn("ponymix toggle")
-        volume.update()
-    end),
-    awful.button({}, 4, function() -- scroll up
-        awful.spawn("ponymix increase 1")
-        volume.update()
-    end),
-    awful.button({}, 5, function() -- scroll down
-        awful.spawn("ponymix decrease 1")
-        volume.update()
-    end)
-))
-
 -- Create the package widget
 local pkgicon = wibox.widget.imagebox(beautiful.pkg_icon)
 pkgwidget = wibox.widget.textbox()
@@ -365,17 +330,6 @@ awful.screen.connect_for_each_screen(function(s)
 
 --{{{ Create the wibox
     s.mywibox = awful.wibar({ position = "bottom", screen = s })
-    s.utilbar = awful.wibar({ position = "top", screen = s})
-
-    s.utilbar:setup {
-    layout = wibox.layout.align.horizontal,
-    nil,
-    nil,
-        {
-        layout = wibox.layout.fixed.horizontal,
-            wibox.container.background(wibox.container.margin(wibox.widget {mymenu, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
-        },
-    }
 
     s.mywibox:setup {
         layout = wibox.layout.align.horizontal,

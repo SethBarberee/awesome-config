@@ -5,11 +5,13 @@
 
 local awful = require("awful")
 local gears = require("gears")
+local naughty = require("naughty")
+local lain = require("lain")
 local timer = require("gears.timer")
 local theme_assets = require("beautiful.theme_assets")
 local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
-local os, math, string = os, math, string
+local os, math, string, awesome, client = os, math, string, awesome, client
 
 local algae_path = os.getenv("HOME") .. "/.config/awesome/themes/algae/"
 local themes_dir = os.getenv("HOME") .. "/.config/awesome/themes/"
@@ -183,6 +185,42 @@ theme.awesome_icon = theme_assets.awesome_icon(
 -- Define the icon theme for application icons. If not set then the icons
 -- from /usr/share/icons and /usr/share/icons/hicolor will be used.
 theme.icon_theme = "HighContrast"
+
+--Create the volume widget
+local volicon = wibox.widget.imagebox(theme.vol_icon)
+
+theme.volume = lain.widget.pulse {
+    settings = function()
+        vlevel = " " .. volume_now.left .. "% | " .. volume_now.device
+        if volume_now.muted == "yes" then
+            vlevel = vlevel .. " M"
+        end
+        widget:set_markup(lain.util.markup(theme.fg_normal, vlevel))
+    end
+}
+-- Buttons actions for when interacting with the volume widget
+volume.widget:buttons(awful.util.table.join(
+    awful.button({}, 1, function() -- left click
+        awful.spawn("pavucontrol")
+    end),
+    awful.button({}, 2, function() -- middle click
+        awful.spawn("ponymix set-volume 100")
+        theme.volume.update()
+    end),
+    awful.button({}, 3, function() -- right click
+        awful.spawn("ponymix toggle")
+        theme.volume.update()
+    end),
+    awful.button({}, 4, function() -- scroll up
+        awful.spawn("ponymix increase 1")
+        theme.volume.update()
+    end),
+    awful.button({}, 5, function() -- scroll down
+        awful.spawn("ponymix decrease 1")
+        theme.volume.update()
+    end)
+))
+
 
 return theme
 
