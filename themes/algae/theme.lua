@@ -57,7 +57,7 @@ theme.tooltip_shape = gears.shape.rounded_rect
 
 -- Hotkey Settings
 theme.hotkeys_bg = theme.bg_normal
-theme.hotkeys_fg = theme.fg_normal
+theme.hotkeys_fg = theme.fg_focus
 theme.hotkeys_border_color = theme.border_focus
 theme.hotkeys_shape = gears.shape.rounded_rect
 
