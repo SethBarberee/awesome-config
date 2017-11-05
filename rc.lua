@@ -1,3 +1,6 @@
+local awesome, client, mouse, screen, tag = awesome, client, mouse, screen, tag
+local ipairs, string, os, table, tostring, tonumber, type = ipairs, string, os, table, tostring, tonumber, type
+
 -- Standard awesome library
 local gears = require("gears")
 local timer = require("gears.timer")
@@ -9,7 +12,6 @@ local vicious = require("vicious")
 local radical = require("radical")
 local lain = require("lain")
 local lain_markup = lain.util.markup
-local separators = lain.util.separators
 -- Theme handling library
 local beautiful = require("beautiful")
 -- Notification library
@@ -90,103 +92,6 @@ menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", ".local/share/appl
 --- }}}
 
 -- {{{ Wibar
--- Create a textclock widget
-local calendaricon = wibox.widget.imagebox(beautiful.calendar_icon)
-local mytextclock = wibox.widget.textclock("<span foreground=\"white\">  %m.%d.%y %H:%M </span>")
-
-local calendar = lain.widget.calendar({
-	cal = "/usr/bin/env TERM=linux /usr/bin/cal --color=always",
-	followtag = true,
-	attach_to = {mytextclock},
-	notification_preset={
-	  font = "Monospace 10",
-	  fg = beautiful.fg_focus,
-	  bg = beautiful.bg_normal
-	}
-
-})
-
--- Create CPU freq widget
-cpufreq = wibox.widget.textbox()
-vicious.register(cpufreq, vicious.widgets.cpufreq,
- function(widget,args)
-     local speed = tonumber(string.format("%3.3f",args[2]))
-  return string.format("%s GHz ", speed)
- end,5,"cpu0")
-
--- Create CPU temp widget
-local tempicon = wibox.widget.imagebox(beautiful.temp_icon)
-local cputemp = lain.widget.temp({
-     tempfile = "/sys/class/thermal/thermal_zone2/temp",
-     settings = function()
-        widget:set_markup(lain_markup.fontfg(beautiful.font, "#ffffff", " " .. coretemp_now .. " °C "))
-    end
-})
-
-
-local function disptemp()
-    local capi = {
-        mouse = mouse,
-        screen = screen
-    }
-
-    local f = "sensors | grep Core"
-    awful.spawn.easy_async_with_shell(f, function(stdout, stderr, reason, exit_code)
-        showtempinfo = naughty.notify( {
-            text    = stdout,
-            title   = "CPU Temperatures",
-            icon    = "/usr/share/icons/HighContrast/32x32/devices/computer.png",
-            timeout = 0,
-            hover_timeout = 0.5,
-            position = "top_right",
-            margin = 8,
-            height = 110,
-            width = 460,
-            screen  = capi.mouse.screen })
-    end)
-end
-
-
-tempicon:connect_signal('mouse::enter', function () disptemp(path) end)
-tempicon:connect_signal('mouse::leave', function () naughty.destroy(showtempinfo)end)
-
--- Redshift widget
-local myredshift = wibox.widget{
-    checked      = false,
-    check_color  = "#EB8F8F",
-    border_color = "#EB8F8F",
-    border_width = 1,
-    shape        = gears.shape.circle,
-    widget       = wibox.widget.checkbox
-}
-
-local myredshift_text = wibox.widget{
-    align  = "center",
-    widget = wibox.widget.textbox,
-}
-
-lain.widget.contrib.redshift:attach(
-    myredshift,
-	function (active)
-		if active then
-		    myredshift_text:set_markup(lain_markup("#000000", "<b>R</b>"))
-		else
-		    myredshift_text:set_markup(lain_markup("#ffffff", "R"))
-        end
-		    myredshift.checked = active
-	end
-)  
-
-local myredshift_stack = wibox.widget{
-    myredshift,
-    myredshift_text,
-    layout = wibox.layout.stack
-}
-
--- Seperator
-local arrow = separators.arrow_left
-local spacer = wibox.widget.textbox('<span font="Monospace 10">  </span>')
-local spacer_small = wibox.widget.textbox(' ')
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -255,54 +160,7 @@ screen.connect_signal("property::geometry", set_wallpaper)
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
-
-    -- Create a promptbox for each screen
-    s.mypromptbox = awful.widget.prompt()
-    -- Create an imagebox widget which will contains an icon indicating which layout we're using.
-    -- We need one layoutbox per screen.
-    s.mylayoutbox = awful.widget.layoutbox(s)
-    s.mylayoutbox:buttons(gears.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
-                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
-    -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.noempty, taglist_buttons)
-
-    -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
-
---{{{ Create the wibox
-    s.mywibox = awful.wibar({ position = "bottom", screen = s })
-
-    s.mywibox:setup {
-        layout = wibox.layout.align.horizontal,
-        { 
-	-- Left widgets
-        layout = wibox.layout.fixed.horizontal,
-                mylauncher,
-		spacer_small,
-                s.mytaglist,
-                s.mypromptbox,
-		spacer_small,
-        },
-        s.mytasklist, -- Middle widget
-        { 
-	-- Right widgets
-        layout = wibox.layout.fixed.horizontal,
-		spacer,
-		arrow("alpha","#F99E6C"),
-		wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
-		arrow("#F99E6C","#777E76"),
-		wibox.container.background(wibox.container.margin(wibox.widget {beautiful.cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
-		arrow("#777E76", "#4B3B51"),
-		wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
-	    arrow("#4B3B51",beautiful.bg_urgent),
-		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.bg_urgent),
-        arrow(beautiful.bg_urgent, "alpha"),
-        wibox.widget.systray(),
-        },
-    }
+    beautiful.at_screen_connect(s)
 end)
 -- }}}
 
