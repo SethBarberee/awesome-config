@@ -10,6 +10,7 @@ local naughty = require("naughty")
 local vicious = require("vicious")
 local lain = require("lain")
 local separators = lain.util.separators
+local lain_markup = lain.util.markup
 local timer = require("gears.timer")
 local theme_assets = require("beautiful.theme_assets")
 local xresources = require("beautiful.xresources")
@@ -31,7 +32,7 @@ local wallpapers = {
 
 local theme = {}
 
-theme.font          = "xft: Knack Nerd Font Mono 10"
+theme.font          = "xft: Knack Nerd Font Mono 11"
 
 -- Background Settings
 theme.bg_normal     = "#282A36"
@@ -142,12 +143,12 @@ theme.layout_cornersw = themes_dir.."default/layouts/cornersww.png"
 theme.layout_cornerse = themes_dir.."default/layouts/cornersew.png"
 
 -- Lain Layout Icon Settings
-theme.layout_termfair    = lain_icons .. "termfair.png"
-theme.layout_centerfair  = lain_icons .. "centerfair.png"  -- termfair.center
-theme.layout_cascade     = lain_icons .. "cascade.png"
-theme.layout_cascadetile = lain_icons .. "cascadetile.png" -- cascade.tile
-theme.layout_centerwork  = lain_icons .. "centerwork.png"
-theme.layout_centerhwork = lain_icons .. "centerworkh.png" -- centerwork.horizontal
+theme.layout_termfair    = lain_icons .. "termfairw.png"
+theme.layout_centerfair  = lain_icons .. "centerfairw.png"  -- termfair.center
+theme.layout_cascade     = lain_icons .. "cascadew.png"
+theme.layout_cascadetile = lain_icons .. "cascadetilew.png" -- cascade.tile
+theme.layout_centerwork  = lain_icons .. "centerworkw.png"
+theme.layout_centerhwork = lain_icons .. "centerworkhw.png" -- centerwork.horizontal
 
 -- Icons for widgets
 theme.calendar_icon = algae_path .. "icons/calendar.png"
@@ -190,109 +191,108 @@ theme.awesome_icon = theme_assets.awesome_icon(
 theme.icon_theme = "HighContrast"
 
 --Create the volume widget
---local volicon = wibox.widget.imagebox(theme.vol_icon)
+local volicon = wibox.widget.imagebox(theme.vol_icon)
 
---theme.volume = lain.widget.pulse {
- --   settings = function()
---        vlevel = " " .. volume_now.left .. "% | " .. volume_now.device
---        if volume_now.muted == "yes" then
---            vlevel = vlevel .. " M"
---        end
---        widget:set_markup(lain.util.markup(theme.fg_normal, vlevel))
---    end
---}
+theme.volume = lain.widget.pulse {
+   settings = function()
+        vlevel = " " .. volume_now.left .. "% | " .. volume_now.device
+        if volume_now.muted == "yes" then
+            vlevel = vlevel .. " M"
+        end
+        widget:set_markup(lain.util.markup(theme.fg_normal, vlevel))
+    end
+}
 -- Buttons actions for when interacting with the volume widget
---theme.volume.widget:buttons(awful.util.table.join(
---    awful.button({}, 1, function() -- left click
- --       awful.spawn("pavucontrol")
---    end),
---    awful.button({}, 2, function() -- middle click
---        awful.spawn("ponymix set-volume 100")
---        theme.volume.update()
---    end),
---    awful.button({}, 3, function() -- right click
---        awful.spawn("ponymix toggle")
---        theme.volume.update()
- --   end),
- --   awful.button({}, 4, function() -- scroll up
---        awful.spawn("ponymix increase 1")
---        theme.volume.update()
---    end),
---    awful.button({}, 5, function() -- scroll down
---        awful.spawn("ponymix decrease 1")
---        theme.volume.update()
---    end)
---))
---
---
+theme.volume.widget:buttons(awful.util.table.join(
+    awful.button({}, 1, function() -- left click
+        awful.spawn("pavucontrol")
+    end),
+    awful.button({}, 2, function() -- middle click
+        awful.spawn("ponymix set-volume 100")
+        theme.volume.update()
+    end),
+    awful.button({}, 3, function() -- right click
+        awful.spawn("ponymix toggle")
+        theme.volume.update()
+    end),
+    awful.button({}, 4, function() -- scroll up
+        awful.spawn("ponymix increase 1")
+        theme.volume.update()
+    end),
+    awful.button({}, 5, function() -- scroll down
+        awful.spawn("ponymix decrease 1")
+        theme.volume.update()
+    end)
+))
+
 -- Create the cpu usage widget
---local cpuicon = wibox.widget.imagebox(theme.cpu_icon)
---theme.cpuwidget = lain.widget.cpu({
---    settings = function()
---        widget:set_markup(lain_markup.font("Monospace 10", " " .. cpu_now.usage .. "% "))
---    end
---
---})
---
+local cpuicon = wibox.widget.imagebox(theme.cpu_icon)
+local cpu = lain.widget.cpu({
+    settings = function()
+        widget:set_markup(lain_markup.font(theme.font, " " .. cpu_now.usage .. "% "))
+    end
+
+})
+
 -- Create CPU freq widget
---cpufreq = wibox.widget.textbox()
---vicious.register(cpufreq, vicious.widgets.cpufreq,
--- function(widget,args)
---     local speed = tonumber(string.format("%3.3f",args[2]))
---  return string.format("%s GHz ", speed)
--- end,5,"cpu0")
---
+local cpufreq = wibox.widget.textbox()
+vicious.register(cpufreq, vicious.widgets.cpufreq,
+ function(widget,args)
+     local speed = tonumber(string.format("%3.3f",args[2]))
+  return string.format("%s GHz ", speed)
+ end,5,"cpu0")
+
 -- Create CPU temp widget
---local tempicon = wibox.widget.imagebox(theme.temp_icon)
---local cputemp = lain.widget.temp({
---     tempfile = "/sys/class/thermal/thermal_zone2/temp",
---     settings = function()
---        widget:set_markup(lain_markup.fontfg(theme.font, "#ffffff", " " .. coretemp_now .. " °C "))
---    end
---})
+local tempicon = wibox.widget.imagebox(theme.temp_icon)
+local cputemp = lain.widget.temp({
+     tempfile = "/sys/class/thermal/thermal_zone2/temp",
+     settings = function()
+        widget:set_markup(lain_markup.fontfg(theme.font, "#ffffff", " " .. coretemp_now .. " °C "))
+    end
+})
 
 
---local function disptemp()
---    local capi = {
---        mouse = mouse,
---        screen = screen
---    }
+local function disptemp()
+    local capi = {
+        mouse = mouse,
+        screen = screen
+    }
 
---    local f = "sensors | grep Core"
---    awful.spawn.easy_async_with_shell(f, function(stdout, stderr, reason, exit_code)
---        showtempinfo = naughty.notify( {
---            text    = stdout,
---            title   = "CPU Temperatures",
---           icon    = "/usr/share/icons/HighContrast/32x32/devices/computer.png",
---           timeout = 0,
---            hover_timeout = 0.5,
---            position = "top_right",
---            margin = 8,
---           height = 110,
---            width = 460,
---            screen  = capi.mouse.screen })
---    end)
---end
+    local f = "sensors | grep Core"
+    awful.spawn.easy_async_with_shell(f, function(stdout, stderr, reason, exit_code)
+        showtempinfo = naughty.notify( {
+            text    = stdout,
+            title   = "CPU Temperatures",
+            icon    = "/usr/share/icons/HighContrast/32x32/devices/computer.png",
+            timeout = 0,
+            hover_timeout = 0.5,
+            position = "top_right",
+            margin = 8,
+            height = 120,
+            width = 520,
+            screen  = capi.mouse.screen })
+    end)
+end
 
 
---tempicon:connect_signal('mouse::enter', function () disptemp(path) end)
---tempicon:connect_signal('mouse::leave', function () naughty.destroy(showtempinfo)end)
+tempicon:connect_signal('mouse::enter', function () disptemp(path) end)
+tempicon:connect_signal('mouse::leave', function () naughty.destroy(showtempinfo)end)
 
 -- Create a textclock widget
---local calendaricon = wibox.widget.imagebox(theme.calendar_icon)
---local mytextclock = wibox.widget.textclock("<span foreground=\"white\">  %m.%d.%y %H:%M </span>")
+local calendaricon = wibox.widget.imagebox(theme.calendar_icon)
+local mytextclock = wibox.widget.textclock("<span foreground=\"white\">  %m.%d.%y %H:%M </span>")
 
---local calendar = lain.widget.calendar({
---	cal = "/usr/bin/env TERM=linux /usr/bin/cal --color=always",
---	followtag = true,
---	attach_to = {mytextclock},
---	notification_preset={
---	  font = "Monospace 10",
---	  fg = theme.fg_focus,
---	  bg = theme.bg_normal
---	}
---
---})
+local calendar = lain.widget.calendar({
+	cal = "/usr/bin/env TERM=linux /usr/bin/cal --color=always",
+	followtag = true,
+	attach_to = {mytextclock},
+	notification_preset={
+	  font = "Monospace 10",
+          fg = theme.fg_focus,
+	  bg = theme.bg_normal
+	}
+
+})
 
 
 
@@ -313,10 +313,10 @@ function theme.at_screen_connect(s)
                            awful.button({ }, 4, function () awful.layout.inc( 1) end),
                            awful.button({ }, 5, function () awful.layout.inc(-1) end)))
     -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.noempty, taglist_buttons)
+    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.noempty, awful.util.taglist_buttons)
 
     -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
+    s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
 
     s.mywibox = awful.wibar({ position = "bottom", screen = s })
     s.mywibox:setup {
@@ -337,7 +337,15 @@ function theme.at_screen_connect(s)
 		spacer,
 		arrow("alpha","#F99E6C"),
 		wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
-	        arrow("#F99E6C",theme.bg_urgent),
+                arrow("#F99E6C","#BD7533"),
+                wibox.container.background(wibox.container.margin(wibox.widget {volicon, theme.volume.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
+                arrow("#BD7533","#4B696D"),
+                wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpu.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B696D"),
+                arrow("#4B696D","#777E76"),
+                wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
+                arrow("#777E76","#4B3B51"),
+                wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
+	        arrow("#4B3B51",theme.bg_urgent),
 		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), theme.bg_urgent),
                 arrow(theme.bg_urgent, "alpha"),
                 wibox.widget.systray(),
@@ -347,13 +355,8 @@ end
 
     
 -- Temporary comment until wibar moving
--- wibox.container.background(wibox.container.margin(wibox.widget {volicon, volume, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
 -- arrow(),
---wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpuwidget.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B696D"),
---wibox.container.background(wibox.container.margin(wibox.widget {theme.cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
 --wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
-
-
 
 
 return theme

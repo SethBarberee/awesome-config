@@ -21,11 +21,17 @@ awful.layout.layouts = {
       -- awful.layout.suit.corner.ne,
       -- awful.layout.suit.corner.sw,
       -- awful.layout.suit.corner.se,
+      -- lain.layout.termfair,
+      -- lain.layout.termfair.center,
+      -- lain.layout.cascade,
+      -- lain.layout.cascade.tile,
+      lain.layout.centerwork,
+      -- lain.layout.centerwork.horizontal,
   }
 
 awful.tag.add("I", {
     --icon ="",
-    layout = awful.layout.suit.floating,
+    layout = lain.layout.centerwork,
     screen = s,
     selected = true,
 })

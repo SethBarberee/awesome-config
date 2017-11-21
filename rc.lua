@@ -1,6 +1,3 @@
-local awesome, client, mouse, screen, tag = awesome, client, mouse, screen, tag
-local ipairs, string, os, table, tostring, tonumber, type = ipairs, string, os, table, tostring, tonumber, type
-
 -- Standard awesome library
 local gears = require("gears")
 local timer = require("gears.timer")
@@ -94,7 +91,7 @@ menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", ".local/share/appl
 -- {{{ Wibar
 
 -- Create a wibox for each screen and add it
-local taglist_buttons = gears.table.join(
+awful.util.taglist_buttons = gears.table.join(
     awful.button({ }, 1, function(t) t:view_only() end),
     awful.button({ modkey }, 1, function(t)
 			if client.focus then
@@ -111,7 +108,7 @@ local taglist_buttons = gears.table.join(
 	awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
 )
 
-local tasklist_buttons = gears.table.join(
+awful.util.tasklist_buttons = gears.table.join(
     awful.button({ }, 1, function (c)
         if c == client.focus then
 				c.minimized = true
@@ -516,8 +513,8 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 -- {{{ Autostart section
-util.utilities.run_once("ckb")
-util.utilities.run_once("radeon-profile")
-util.utilities.run_once("thunar --daemon")
-util.utilities.run_once("light-locker")
+--util.utilities.run_once("ckb")
+--util.utilities.run_once("radeon-profile")
+--util.utilities.run_once("thunar --daemon")
+--util.utilities.run_once("light-locker")
 -- }}}
