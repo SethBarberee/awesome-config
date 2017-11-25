@@ -2,6 +2,7 @@
 
 local awful = require("awful")
 local lain = require("lain")
+local util = require("util")
 
  -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
@@ -26,12 +27,13 @@ awful.layout.layouts = {
       -- lain.layout.cascade,
       -- lain.layout.cascade.tile,
       lain.layout.centerwork,
+      util.bstack,
       -- lain.layout.centerwork.horizontal,
   }
 
 awful.tag.add("I", {
     --icon ="",
-    layout = lain.layout.centerwork,
+    layout = util.bstack,
     screen = s,
     selected = true,
 })
