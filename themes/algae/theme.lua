@@ -24,7 +24,7 @@ local lain_icons = os.getenv("HOME") .."/.config/awesome/lain/icons/layout/defau
 --Wallpapers: [1] = morning, [2] = daytime, [3] = evening, [4] = night
 local wallpapers = {
         algae_path .. "wallpapers/morning.jpg",
-        algae_path .. "wallpapers/day.png",
+        algae_path .. "wallpapers/day.jpg",
         algae_path .. "wallpapers/evening.jpg",
         algae_path .. "wallpapers/night.jpg"
 }
