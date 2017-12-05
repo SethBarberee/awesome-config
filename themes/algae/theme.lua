@@ -11,7 +11,6 @@ local vicious = require("vicious")
 local lain = require("lain")
 local separators = lain.util.separators
 local lain_markup = lain.util.markup
-local timer = require("gears.timer")
 local theme_assets = require("beautiful.theme_assets")
 local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
