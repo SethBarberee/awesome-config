@@ -190,6 +190,7 @@ theme.awesome_icon = theme_assets.awesome_icon(
 -- from /usr/share/icons and /usr/share/icons/hicolor will be used.
 theme.icon_theme = "HighContrast"
 
+
 --Create the volume widget
 local volicon = wibox.widget.imagebox(theme.vol_icon)
 
