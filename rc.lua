@@ -9,7 +9,6 @@ local vicious = require("vicious")
 local radical = require("radical")
 local lain = require("lain")
 local lain_markup = lain.util.markup
-local separators = lain.util.separators
 -- Theme handling library
 local beautiful = require("beautiful")
 -- Notification library
@@ -37,7 +36,7 @@ terminal = "urxvt"
 theme = "algae"
 editor = os.getenv("EDITOR") or "nvim"
 editor_cmd = terminal .. " -e " .. editor
-modkey = "Mod1"
+modkey = "Mod4"
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(config_path.. "themes/".. theme .. "/theme.lua")
 revelation.init({charorder = "1234567890jkluiopyhnmfdsatgvcewqzx"})
@@ -89,198 +88,10 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 menubar.menu_gen.all_menu_dirs = { "/usr/share/applications", ".local/share/applications" }
 --- }}}
 
- -- Radical Menu
-local menu = radical.context {
-    bg_focus = beautiful.border_focus,
-    fg_focus = beautiful.border_normal,
-    style = radical.style.classic,
-    item_style = radical.item.style.arrow_3d,
-    layout = radical.layout.vertical
-}
-menu:add_item {text="osu-lazer",button1=function() awful.spawn("osu-lazer") end}
-menu:add_item {text="Testing Radical"}
-menu:add_item {text="spotify",button1=function() awful.spawn("spotify") end}
-menu:add_item {text="Lock Screen",button1=function() awful.spawn("light-locker-command -l") end}
--- To add the menu to a widget:
-local mymenu = wibox.widget.textbox("Menu")
-mymenu:set_menu(menu,"button::pressed","3") -- 3 = right mouse button, 1 = left mouse button
-mymenu:set_tooltip("Radical Menu Test")
-
 -- {{{ Wibar
--- Create a textclock widget
-local calendaricon = wibox.widget.imagebox(beautiful.calendar_icon)
-local mytextclock = wibox.widget.textclock("<span foreground=\"white\">  %m.%d.%y %H:%M </span>")
-
-local calendar = lain.widget.calendar({
-	cal = "/usr/bin/env TERM=linux /usr/bin/cal --color=always",
-	followtag = true,
-	attach_to = {mytextclock},
-	notification_preset={
-	  font = "Monospace 10",
-	  fg = beautiful.fg_focus,
-	  bg = beautiful.bg_normal
-	}
-
-})
--- Create the cpu usage widget
-local cpuicon = wibox.widget.imagebox(beautiful.cpu_icon)
-local cpuwidget = lain.widget.cpu({
-    settings = function()
-        widget:set_markup(lain_markup.font(beautiful.font, " " .. cpu_now.usage .. "% "))
-    end
-
-})
-
--- Create CPU freq widget
-cpufreq = wibox.widget.textbox()
-vicious.register(cpufreq, vicious.widgets.cpufreq,
- function(widget,args)
-     local speed = tonumber(string.format("%3.3f",args[2]))
-  return string.format("%s GHz ", speed)
- end,5,"cpu0")
-
--- Create CPU temp widget
-local tempicon = wibox.widget.imagebox(beautiful.temp_icon)
-local cputemp = lain.widget.temp({
-     tempfile = "/sys/class/thermal/thermal_zone2/temp",
-     settings = function()
-        widget:set_markup(lain_markup.fontfg(beautiful.font, "#ffffff", " " .. coretemp_now .. " °C "))
-    end
-})
-
-
-local function disptemp()
-    local capi = {
-        mouse = mouse,
-        screen = screen
-    }
-
-    local f = "sensors | grep Core"
-    awful.spawn.easy_async_with_shell(f, function(stdout, stderr, reason, exit_code)
-        showtempinfo = naughty.notify( {
-            text    = stdout,
-            title   = "CPU Temperatures",
-            icon    = "/usr/share/icons/HighContrast/32x32/devices/computer.png",
-            timeout = 0,
-            hover_timeout = 0.5,
-            position = "top_right",
-            margin = 8,
-            height = 110,
-            width = 460,
-            screen  = capi.mouse.screen })
-    end)
-end
-
-
-tempicon:connect_signal('mouse::enter', function () disptemp(path) end)
-tempicon:connect_signal('mouse::leave', function () naughty.destroy(showtempinfo)end)
-
--- Redshift widget
-local myredshift = wibox.widget{
-    checked      = false,
-    check_color  = "#EB8F8F",
-    border_color = "#EB8F8F",
-    border_width = 1,
-    shape        = gears.shape.circle,
-    widget       = wibox.widget.checkbox
-}
-
-local myredshift_text = wibox.widget{
-    align  = "center",
-    widget = wibox.widget.textbox,
-}
-
-lain.widget.contrib.redshift:attach(
-    myredshift,
-	function (active)
-		if active then
-		    myredshift_text:set_markup(lain_markup(beautiful.bg_normal, "<b>R</b>"))
-		else
-		    myredshift_text:set_markup(lain_markup(beautiful.fg_normal, "R"))
-        end
-		    myredshift.checked = active
-	end
-)  
-
-local myredshift_stack = wibox.widget{
-    myredshift,
-    myredshift_text,
-    layout = wibox.layout.stack
-}
-
---Create the volume widget
-local volicon = wibox.widget.imagebox(beautiful.vol_icon)
-
-local volume = lain.widget.pulse {
-    settings = function()
-        vlevel = " " .. volume_now.left .. "% | " .. volume_now.device
-        if volume_now.muted == "yes" then
-            vlevel = vlevel .. " M"
-        end
-        widget:set_markup(lain.util.markup(beautiful.fg_normal, vlevel))
-    end
-}
--- Buttons actions for when interacting with the volume widget
-volume.widget:buttons(awful.util.table.join(
-    awful.button({}, 1, function() -- left click
-        awful.spawn("pavucontrol")
-    end),
-    awful.button({}, 2, function() -- middle click
-        awful.spawn("ponymix set-volume 100")
-        volume.update()
-    end),
-    awful.button({}, 3, function() -- right click
-        awful.spawn("ponymix toggle")
-        volume.update()
-    end),
-    awful.button({}, 4, function() -- scroll up
-        awful.spawn("ponymix increase 1")
-        volume.update()
-    end),
-    awful.button({}, 5, function() -- scroll down
-        awful.spawn("ponymix decrease 1")
-        volume.update()
-    end)
-))
-
--- Create the package widget
-local pkgicon = wibox.widget.imagebox(beautiful.pkg_icon)
-pkgwidget = wibox.widget.textbox()
-awful.widget.watch("checkupdates",15,function(widget, stdout)
-		if stdout == "" then
-				widget:set_markup_silently("0 ")
-		else
-				-- Count up the updates
-				--local count
-				--for line in stdout:gmatch("[\n]+") do
-				--		count = count + 1
-				--end
-				-- Display the number
-				--widget:set_markup_silently(count)
-				widget:set_markup_silently("")
-		end
- end,pkgwidget)
-pkgicon:connect_signal('mouse::enter', function ()
-		awful.spawn.easy_async_with_shell("checkupdates", function(stdout,stderr,exitreason,exitcode)
-				local pkginfo = ""
-				if stdout == "" then
-						-- No updates
-                                                pkginfo = utilities.notify_me("Package List:","No Updates Found")
-				else
-						-- Display list of updates
-                                                pkginfo = utilities.notify_me("Package List:", stdout)
-				end
-		end)
-end)
-pkgicon:connect_signal('mouse::leave',function() naughty.destroy(pkginfo)end)
-
--- Seperator
-local arrow = separators.arrow_left
-local spacer = wibox.widget.textbox('<span font="Monospace 10">  </span>')
-local spacer_small = wibox.widget.textbox(' ')
 
 -- Create a wibox for each screen and add it
-local taglist_buttons = gears.table.join(
+awful.util.taglist_buttons = gears.table.join(
     awful.button({ }, 1, function(t) t:view_only() end),
     awful.button({ modkey }, 1, function(t)
 			if client.focus then
@@ -297,7 +108,7 @@ local taglist_buttons = gears.table.join(
 	awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
 )
 
-local tasklist_buttons = gears.table.join(
+awful.util.tasklist_buttons = gears.table.join(
     awful.button({ }, 1, function (c)
         if c == client.focus then
 				c.minimized = true
@@ -346,73 +157,7 @@ screen.connect_signal("property::geometry", set_wallpaper)
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
-
-    -- Create a promptbox for each screen
-    s.mypromptbox = awful.widget.prompt()
-    -- Create an imagebox widget which will contains an icon indicating which layout we're using.
-    -- We need one layoutbox per screen.
-    s.mylayoutbox = awful.widget.layoutbox(s)
-    s.mylayoutbox:buttons(gears.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
-                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
-    -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.noempty, taglist_buttons)
-
-    -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
-
---{{{ Create the wibox
-    s.mywibox = awful.wibar({ position = "bottom", screen = s })
-    s.utilbar = awful.wibar({ position = "top", screen = s})
-
-    s.utilbar:setup {
-    layout = wibox.layout.align.horizontal,
-    nil,
-    nil,
-        {
-        layout = wibox.layout.fixed.horizontal,
-            wibox.container.background(wibox.container.margin(wibox.widget {mymenu, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
-        },
-    }
-
-    s.mywibox:setup {
-        layout = wibox.layout.align.horizontal,
-        { 
-	-- Left widgets
-        layout = wibox.layout.fixed.horizontal,
-                mylauncher,
-		spacer_small,
-                s.mytaglist,
-                s.mypromptbox,
-		spacer_small,
-        },
-        s.mytasklist, -- Middle widget
-        { 
-	-- Right widgets
-        layout = wibox.layout.fixed.horizontal,
-		spacer,
-		arrow("alpha","#F99E6C"),
-		wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
-		arrow("#F99E6C","#ff0000"),
-		wibox.container.background(wibox.container.margin(wibox.widget {myredshift_stack, layout = wibox.layout.align.horizontal }, 3, 4), "#ff0000"),
-		arrow("#ff0000", "#BD7533"),
-                wibox.container.background(wibox.container.margin(wibox.widget {volicon, volume, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
-		arrow("#BD7533","#FF79C6"),
-		wibox.container.background(wibox.container.margin(wibox.widget {pkgicon, pkgwidget, layout = wibox.layout.align.horizontal }, 3, 4), "#FF79C6"),
-	        arrow("#FF79C6","#777E76"),
-		wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
-		arrow("#777E76", "#4B696D"),
-                wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpuwidget.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B696D"),
-	        arrow("#4B696D", "#4B3B51"),
-		wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
-	        arrow("#4B3B51",beautiful.bg_urgent),
-		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), beautiful.bg_urgent),
-                arrow(beautiful.bg_urgent, "alpha"),
-                wibox.widget.systray(),
-        },
-    }
+    beautiful.at_screen_connect(s)
 end)
 -- }}}
 
@@ -450,6 +195,11 @@ globalkeys = gears.table.join(
               {description = "Increase Volume", group="media"}),
     awful.key({}, "XF86AudioLowerVolume", function() awful.spawn.with_shell("ponymix decrease 10") end,
 		      {description = "Decrease Volume", group="media"}),
+    awful.key({}, "XF86MonBrightnessUp", function() awful.spawn.with_shell("brightnessctl s 5%+") end,
+		      {description = "Increase Brightness", group="monitor"}),
+    awful.key({}, "XF86MonBrightnessDown", function() awful.spawn.with_shell("brightnessctl s 5%-") end,
+		      {description = "Decrease Brightness", group="monitor"}),
+
 
     awful.key({ modkey,           }, "j",
         function ()
@@ -768,8 +518,8 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 -- {{{ Autostart section
-util.utilities.run_once("ckb")
-util.utilities.run_once("radeon-profile")
-util.utilities.run_once("thunar --daemon")
-util.utilities.run_once("light-locker")
+--util.utilities.run_once("ckb")
+--util.utilities.run_once("radeon-profile")
+--util.utilities.run_once("thunar --daemon")
+--util.utilities.run_once("light-locker")
 -- }}}

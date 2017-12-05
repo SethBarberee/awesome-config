@@ -2,7 +2,9 @@
 -- Awesome theme which follows xrdb config --
 --   by Yauhen Kirylau                    --
 ---------------------------------------------
-
+local awful = require("awful")
+local gears = require("gears")
+local wibox = require("wibox")
 local theme_assets = require("beautiful.theme_assets")
 local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
@@ -99,6 +101,44 @@ end
 theme.wallpaper = function(s)
     return theme_assets.wallpaper(wallpaper_bg, wallpaper_fg, wallpaper_alt_fg, s)
 end
+
+function theme.at_screen_connect(s)
+    -- Create a promptbox for each screen
+    s.mypromptbox = awful.widget.prompt()
+    -- Create an imagebox widget which will contains an icon indicating which layout we're using.
+    -- We need one layoutbox per screen.
+    s.mylayoutbox = awful.widget.layoutbox(s)
+    s.mylayoutbox:buttons(gears.table.join(
+                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
+                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
+                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
+                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
+    -- Create a taglist widget
+    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.noempty, awful.util.taglist_buttons)
+
+    -- Create a tasklist widget
+    s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
+
+    s.mywibox = awful.wibar({ position = "bottom", screen = s })
+    s.mywibox:setup {
+        layout = wibox.layout.align.horizontal,
+        { 
+	-- Left widgets
+        layout = wibox.layout.fixed.horizontal,
+                mylauncher,
+                s.mytaglist,
+                s.mypromptbox,
+        },
+        s.mytasklist, -- Middle widget
+        { 
+	-- Right widgets
+        layout = wibox.layout.fixed.horizontal,
+		wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
+                wibox.widget.systray(),
+        },
+    }
+end
+
 
 return theme
 
