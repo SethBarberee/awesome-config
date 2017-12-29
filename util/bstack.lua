@@ -33,33 +33,47 @@ local function do_stack(p, orientation)
             local c = cls[1]
             g.height = wa.height
             g.width = wa.width
-            g.x = 0
-            g.y = 0
+            g.x = wa.x
+            g.y = wa.y
             p.geometries[c] = g
         else
             local screen_half = math.floor(wa.height/2)
             local rem_clients = #cls - nmaster
-            -- Set top half
-            -- TODO account for mwfact
-            for i = 1, nmaster, 1 do
-                local a = cls[i]
-                local g = {}
-                g.width = wa.width / nmaster
-                g.height = screen_half
-                g.x = (i-1) * g.width
-                g.y = 0
-                p.geometries[a] = g
-            end
-            -- Divide bottom half for clients
-            for i = #cls,nmaster+1,-1 do
-                local a = cls[i]
-                local g = {}
-                -- TODO height should change with mwfact
-                g.height = screen_half
-                g.width = math.floor(wa.width/rem_clients)
-                g.x = (i-nmaster-1) * g.width 
-                g.y = screen_half
-                p.geometries[a] = g
+            -- Test for whether we have clients
+            if rem_clients > 0 then
+                -- Set top half
+                -- TODO account for mwfact
+                for i = 1, nmaster, 1 do
+                    local a = cls[i]
+                    local g = {}
+                    g.width = wa.width / nmaster
+                    g.height = screen_half
+                    g.x = (i-1) * g.width + wa.x
+                    g.y = wa.y
+                    p.geometries[a] = g
+                end
+                -- Divide bottom half for clients
+                for i = #cls,nmaster+1,-1 do
+                    local a = cls[i]
+                    local g = {}
+                    -- TODO height should change with mwfact
+                    g.height = screen_half
+                    g.width = math.floor(wa.width/rem_clients)
+                    g.x = (i-nmaster-1) * g.width + wa.x
+                    g.y = wa.y + screen_half
+                    p.geometries[a] = g
+                end
+            else
+                -- Only have master so split screen for master
+                for i = 1, nmaster, 1 do
+                    local a = cls[i]
+                    local g = {}
+                    g.width = wa.width / nmaster
+                    g.height = wa.height
+                    g.x = (i-1) * g.width + wa.x
+                    g.y = wa.y
+                    p.geometries[a] = g
+                end
             end
         end
     elseif orientation == "horizontal" then
