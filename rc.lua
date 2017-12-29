@@ -7,8 +7,6 @@ require("awful.autofocus")
 local wibox = require("wibox")
 local vicious = require("vicious")
 local radical = require("radical")
-local lain = require("lain")
-local lain_markup = lain.util.markup
 -- Theme handling library
 local beautiful = require("beautiful")
 -- Notification library
@@ -29,6 +27,7 @@ require("awful.hotkeys_popup.keys.vim")
 
 local config_path = awful.util.get_configuration_dir()
 
+-- Add the custom tags manually
 dofile(config_path .. "/util/tag.lua")
 
 -- {{{ Variable definitions
@@ -37,8 +36,13 @@ theme = "algae"
 editor = os.getenv("EDITOR") or "nvim"
 editor_cmd = terminal .. " -e " .. editor
 modkey = "Mod4"
--- Themes define colours, icons, font and wallpapers.
-beautiful.init(config_path.. "themes/".. theme .. "/theme.lua")
+
+-- Ensure theme is a valid theme, if not default to algae theme
+if awful.util.file_readable(config_path .. "themes/" .. theme .. "/theme.lua") then
+    beautiful.init(config_path.. "themes/".. theme .. "/theme.lua")
+else
+    beautiful.init(config_path.. "themes/algae/theme.lua")   
+end
 revelation.init({charorder = "1234567890jkluiopyhnmfdsatgvcewqzx"})
 -- }}}
 
@@ -249,7 +253,8 @@ globalkeys = gears.table.join(
               {description = "select next", group = "layout"}),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
               {description = "select previous", group = "layout"}),
-
+    awful.key({ "Control"}, "Print", function() awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -l") end,
+              {description = "lock screen", group = "screen"}),
     awful.key({ modkey, "Control" }, "n",
               function ()
                   local c = awful.client.restore()
@@ -454,7 +459,7 @@ client.connect_signal("manage", function (c)
     -- Set the windows at the slave,
     -- i.e. put it at the end of others instead of setting it master.
     -- if not awesome.startup then awful.client.setslave(c) end
-
+    c.shape = gears.shape.rounded_rect -- round all the shapes!!
     if awesome.startup and
       not c.size_hints.user_position
       and not c.size_hints.program_position then
