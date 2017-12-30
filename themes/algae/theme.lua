@@ -20,6 +20,9 @@ local algae_path = os.getenv("HOME") .. "/.config/awesome/themes/algae/"
 local themes_dir = os.getenv("HOME") .. "/.config/awesome/themes/"
 local lain_icons = os.getenv("HOME") .."/.config/awesome/lain/icons/layout/default/"
 
+local laptop = require("util.laptop")
+local battery = nil
+
 --Wallpapers: [1] = morning, [2] = daytime, [3] = evening, [4] = night
 local wallpapers = {
         algae_path .. "wallpapers/morning.jpg",
@@ -121,6 +124,9 @@ theme = theme_assets.recolor_layout(theme, theme.fg_normal)
 -- Tasklist Options
 theme.tasklist_align = "center"
 theme.tasklist_disable_icon = true
+theme.tasklist_bg_focus = theme.fg_focus
+theme.tasklist_fg_focus = theme.bg_normal
+theme.tasklist_shape = gears.shape.rounded_rect
 
 
 -- Layout Icon Settings
@@ -160,26 +166,33 @@ theme.vol_icon = algae_path .. "icons/volume.png"
 -- Wallpaper if not using wallpaper setter
 -- theme.wallpaper = algae_path .. "background.png"
 
+-- TODO write function that condenses wal and betterlockscreen
+-- Maybe with a number argument??
 theme.wallpaper = function(s)
     local hr = tonumber(string.sub(os.date("%R"), 1, 2))
     if hr >= 0 and hr <= 5 then --night
         gears.wallpaper.maximized(wallpapers[4], s, true)
         awful.spawn.with_shell("~/wal/wal -n -q -i" .. wallpapers[4])
+        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[4])
     elseif hr >= 6 and hr <= 10 then -- morning
         gears.wallpaper.maximized(wallpapers[1], s, true)
         awful.spawn.with_shell("~/wal/wal -x -n -q -i" .. wallpapers[1])
+        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[1])
     elseif hr >= 11 and hr <= 15 then -- day
         gears.wallpaper.maximized(wallpapers[2], s, true)
         awful.spawn.with_shell("~/wal/wal -x -n -q -i" .. wallpapers[2])
+        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[2])
     elseif hr >= 16 and hr <= 18 then -- evening
         gears.wallpaper.maximized(wallpapers[3], s, true)
         awful.spawn.with_shell("~/wal/wal -n -q -i" .. wallpapers[3])
+        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[3])
     elseif hr >= 19 and hr <= 23 then -- night
         gears.wallpaper.maximized(wallpapers[4], s, true)
         awful.spawn.with_shell("~/wal/wal -n -q -i" .. wallpapers[4])
+        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[4])
     end
 end
- 
+
 -- Generate Awesome icon:
 theme.awesome_icon = theme_assets.awesome_icon(
     theme.menu_height, theme.bg_focus, theme.fg_focus
@@ -224,6 +237,8 @@ theme.volume.widget:buttons(awful.util.table.join(
         theme.volume.update()
     end)
 ))
+local volume = wibox.container.background(wibox.container.margin(wibox.widget {volicon, theme.volume.widget, layout = wibox.layout.align.horizontal }, 10, 10), "#BD7533", gears.shape.rounded_rect)
+
 
 -- Create the cpu usage widget
 local cpuicon = wibox.widget.imagebox(theme.cpu_icon)
@@ -233,6 +248,8 @@ local cpu = lain.widget.cpu({
     end
 
 })
+local cpu_usage = wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpu.widget, layout = wibox.layout.align.horizontal }, 10, 10), "#4B696D", gears.shape.rounded_rect)
+
 
 -- Create CPU freq widget
 local cpufreq = wibox.widget.textbox()
@@ -241,6 +258,9 @@ vicious.register(cpufreq, vicious.widgets.cpufreq,
      local speed = tonumber(string.format("%3.3f",args[2]))
   return string.format("%s GHz ", speed)
  end,5,"cpu0")
+
+local cpu_speed = wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 10, 10), "#777E76", gears.shape.rounded_rect)
+
 
 -- Create CPU temp widget
 local tempicon = wibox.widget.imagebox(theme.temp_icon)
@@ -277,6 +297,8 @@ end
 
 tempicon:connect_signal('mouse::enter', function () disptemp(path) end)
 tempicon:connect_signal('mouse::leave', function () naughty.destroy(showtempinfo)end)
+local cpu_temp = wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 10, 10), "#4B3B51", gears.shape.rounded_rect)
+
 
 -- Create a textclock widget
 local calendaricon = wibox.widget.imagebox(theme.calendar_icon)
@@ -293,11 +315,18 @@ local calendar = lain.widget.calendar({
 	}
 
 })
+local calendar_date = wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 10, 10), theme.bg_urgent, gears.shape.rounded_rect)
 
-
+-- I really don't want all this crap showing on my laptop but I do want the
+-- battery module
+if laptop then
+    cpu_usage = nil
+    cpu_speed = nil
+    cpu_temp = nil
+    battery = require("util.battery")
+end
 
 -- Seperator
-local arrow = separators.arrow_left
 local spacer = wibox.widget.textbox('<span font="Monospace 10">  </span>')
 local spacer_small = wibox.widget.textbox(' ')
 
@@ -312,52 +341,40 @@ function theme.at_screen_connect(s)
                            awful.button({ }, 3, function () awful.layout.inc(-1) end),
                            awful.button({ }, 4, function () awful.layout.inc( 1) end),
                            awful.button({ }, 5, function () awful.layout.inc(-1) end)))
+    local layout = wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 10, 10), "#F99E6C", gears.shape.rounded_rect)
+
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.noempty, awful.util.taglist_buttons)
 
     -- Create a tasklist widget
     s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
 
-    s.mywibox = awful.wibar({ position = "bottom", screen = s })
+    s.mywibox = awful.wibar({ position = "bottom", screen = s, shape = gears.shape.rounded_rect})
     s.mywibox:setup {
         layout = wibox.layout.align.horizontal,
-        { 
+        {
 	-- Left widgets
         layout = wibox.layout.fixed.horizontal,
                 mylauncher,
-		spacer_small,
                 s.mytaglist,
                 s.mypromptbox,
 		spacer_small,
         },
         s.mytasklist, -- Middle widget
-        { 
+        {
 	-- Right widgets
         layout = wibox.layout.fixed.horizontal,
-		spacer,
-		arrow("alpha","#F99E6C"),
-		wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 3, 4), "#F99E6C"),
-                arrow("#F99E6C","#BD7533"),
-                wibox.container.background(wibox.container.margin(wibox.widget {volicon, theme.volume.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#BD7533"),
-                arrow("#BD7533","#4B696D"),
-                wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpu.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B696D"),
-                arrow("#4B696D","#777E76"),
-                wibox.container.background(wibox.container.margin(wibox.widget {cpuicon, cpufreq, layout = wibox.layout.align.horizontal }, 3, 4), "#777E76"),
-                arrow("#777E76","#4B3B51"),
-                wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
-	        arrow("#4B3B51",theme.bg_urgent),
-		wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 3, 4), theme.bg_urgent),
-                arrow(theme.bg_urgent, "alpha"),
+                layout,
+                volume,
+                cpu_usage,
+                cpu_speed,
+                cpu_temp,
+                calendar_date,
+                battery,
                 wibox.widget.systray(),
         },
     }
 end
-
-    
--- Temporary comment until wibar moving
--- arrow(),
---wibox.container.background(wibox.container.margin(wibox.widget {tempicon, cputemp.widget, layout = wibox.layout.align.horizontal }, 3, 4), "#4B3B51"),
-
 
 return theme
 
