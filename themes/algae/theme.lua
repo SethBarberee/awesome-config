@@ -2,6 +2,7 @@
 -- Algae awesome theme --
 -- Author: Seth Barberee --
 ---------------------------
+local theme = {}
 
 local awful = require("awful")
 local gears = require("gears")
@@ -30,9 +31,6 @@ local wallpapers = {
         algae_path .. "wallpapers/evening.jpg",
         algae_path .. "wallpapers/night.jpg"
 }
-
-
-local theme = {}
 
 theme.font          = "xft: Knack Nerd Font Mono 11"
 
@@ -128,6 +126,11 @@ theme.tasklist_bg_focus = theme.fg_focus
 theme.tasklist_fg_focus = theme.bg_normal
 theme.tasklist_shape = gears.shape.rounded_rect
 
+
+-- Widget specific stuff
+theme.progressbar_bg = theme.bg_normal
+theme.progressbar_fg = theme.fg_focus
+theme.progressbar_border_color = theme.border_focus
 
 -- Layout Icon Settings
 theme.layout_fairh = themes_dir.."default/layouts/fairhw.png"

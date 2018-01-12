@@ -36,9 +36,11 @@ theme = "algae"
 editor = os.getenv("EDITOR") or "nvim"
 editor_cmd = terminal .. " -e " .. editor
 modkey = "Mod4"
+-- }}}
 
+-- {{{ Theme checks
 -- Ensure theme is a valid theme, if not default to algae theme
-if awful.util.file_readable(config_path .. "themes/" .. theme .. "/theme.lua") then
+if awful.util.checkfile(config_path .. "themes/" .. theme .. "/theme.lua") then
     beautiful.init(config_path.. "themes/".. theme .. "/theme.lua")
 else
     beautiful.init(config_path.. "themes/algae/theme.lua")   
@@ -441,6 +443,10 @@ awful.rules.rules = {
     -- Add titlebars to normal clients and dialogs
     { rule_any = {type = { "normal", "dialog" }
       }, properties = { titlebars_enabled = true }
+    },
+
+    { rule = { class = "GLava" },
+    properties = {titlebars_enabled = false }
     },
 
     -- Set Chromium to always map on the tag named "II" on screen 1
