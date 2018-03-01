@@ -255,6 +255,8 @@ globalkeys = gears.table.join(
               {description = "select next", group = "layout"}),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
               {description = "select previous", group = "layout"}),
+    awful.key({}, "Print", function() awful.spawn.with_shell("scrot -d 5") end,
+              {description = "screenshot", group = "screen"}),
     awful.key({ "Control"}, "Print", function() awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -l") end,
               {description = "lock screen", group = "screen"}),
     awful.key({ modkey, "Control" }, "n",
