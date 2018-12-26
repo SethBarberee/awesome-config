@@ -35,7 +35,7 @@ local wallpapers = {
 theme.font          = "xft: Knack Nerd Font Mono 11"
 
 -- Background Settings
-theme.bg_normal     = "#282A36"
+theme.bg_normal     = "#0B1E20"
 theme.bg_focus      = theme.bg_normal
 theme.bg_urgent     = "#ff0000"
 theme.bg_minimize   = "#444444"
@@ -43,7 +43,7 @@ theme.bg_systray    = theme.bg_normal
 
 -- Foreground Settings
 theme.fg_normal     = "#F8F8F8"
-theme.fg_focus      = "#50FA7B"
+theme.fg_focus      = "#A8CE8A"
 theme.fg_urgent     = "#ffffff"
 theme.fg_minimize   = "#ffffff"
 
@@ -52,7 +52,7 @@ theme.useless_gap   = dpi(4)
 -- Window Border Settings
 theme.border_width  = dpi(3)
 theme.border_normal = "#000000"
-theme.border_focus  = "#50FA7B"
+theme.border_focus  = theme.fg_focus
 theme.border_marked = "#91231c"
 
 -- Window Tooltip Settings
@@ -78,7 +78,8 @@ theme.notification_fg = theme.fg_focus
 theme.notification_border_color = theme.border_tooltip
 theme.notification_border_width = theme.border_width
 theme.notification_shape = gears.shape.rounded_rect
-theme.notification_opacity = 0.94
+theme.notification_opacity = 0.90
+theme.notification_icon_size = 128
 
 -- Variables set for theming the menu:
 -- menu_[bg|fg]_[normal|focus]
@@ -176,23 +177,23 @@ theme.wallpaper = function(s)
     if hr >= 0 and hr <= 5 then --night
         gears.wallpaper.maximized(wallpapers[4], s, true)
         awful.spawn.with_shell("wal -n -q -i" .. wallpapers[4])
-        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[4])
+        --awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[4])
     elseif hr >= 6 and hr <= 10 then -- morning
         gears.wallpaper.maximized(wallpapers[1], s, true)
         awful.spawn.with_shell("wal -n -q -i" .. wallpapers[1])
-        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[1])
+        --awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[1])
     elseif hr >= 11 and hr <= 15 then -- day
         gears.wallpaper.maximized(wallpapers[2], s, true)
         awful.spawn.with_shell("wal -n -q -i" .. wallpapers[2])
-        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[2])
+        --awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[2])
     elseif hr >= 16 and hr <= 18 then -- evening
         gears.wallpaper.maximized(wallpapers[3], s, true)
         awful.spawn.with_shell("wal -n -q -i" .. wallpapers[3])
-        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[3])
+        --awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[3])
     elseif hr >= 19 and hr <= 23 then -- night
         gears.wallpaper.maximized(wallpapers[4], s, true)
         awful.spawn.with_shell("wal -n -q -i" .. wallpapers[4])
-        awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[4])
+        --awful.spawn.with_shell("~/betterlockscreen/betterlockscreen -u " .. wallpapers[4])
     end
 end
 
@@ -240,7 +241,7 @@ theme.volume.widget:buttons(awful.util.table.join(
         theme.volume.update()
     end)
 ))
-local volume = wibox.container.background(wibox.container.margin(wibox.widget {volicon, theme.volume.widget, layout = wibox.layout.align.horizontal }, 10, 10), "#BD7533", gears.shape.rounded_rect)
+local volume = wibox.container.background(wibox.container.margin(wibox.widget {volicon, theme.volume.widget, layout = wibox.layout.align.horizontal }, 10, 10), "#53986D", gears.shape.rounded_rect)
 
 
 -- Create the cpu usage widget
@@ -307,8 +308,7 @@ local cpu_temp = wibox.container.background(wibox.container.margin(wibox.widget 
 local calendaricon = wibox.widget.imagebox(theme.calendar_icon)
 local mytextclock = wibox.widget.textclock("<span foreground=\"white\">  %m.%d.%y %H:%M </span>")
 
-local calendar = lain.widget.calendar({
-	cal = "/usr/bin/env TERM=linux /usr/bin/cal --color=always",
+local calendar = lain.widget.cal({
 	followtag = true,
 	attach_to = {mytextclock},
 	notification_preset={
@@ -318,7 +318,7 @@ local calendar = lain.widget.calendar({
 	}
 
 })
-local calendar_date = wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 10, 10), theme.bg_urgent, gears.shape.rounded_rect)
+local calendar_date = wibox.container.background(wibox.container.margin(wibox.widget {calendaricon, mytextclock, layout = wibox.layout.align.horizontal }, 10, 10), "#7AB286", gears.shape.rounded_rect)
 
 -- I really don't want all this crap showing on my laptop but I do want the
 -- battery module
@@ -344,7 +344,7 @@ function theme.at_screen_connect(s)
                            awful.button({ }, 3, function () awful.layout.inc(-1) end),
                            awful.button({ }, 4, function () awful.layout.inc( 1) end),
                            awful.button({ }, 5, function () awful.layout.inc(-1) end)))
-    local layout = wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 10, 10), "#F99E6C", gears.shape.rounded_rect)
+    local layout = wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 10, 10), "#3E8E62", gears.shape.rounded_rect)
 
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.noempty, awful.util.taglist_buttons)
