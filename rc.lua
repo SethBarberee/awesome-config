@@ -23,7 +23,7 @@ local util = require("util")
 -- Common library
 local common = require("awful.widget.common")
 -- Enable VIM help for hotkeys widget when client with matching name is opened:
-require("awful.hotkeys_popup.keys.vim")
+require("awful.hotkeys_popup.keys")
 
 local config_path = awful.util.get_configuration_dir()
 
@@ -31,7 +31,7 @@ local config_path = awful.util.get_configuration_dir()
 dofile(config_path .. "/util/tag.lua")
 
 -- {{{ Variable definitions
-terminal = "urxvt"
+terminal = "st"
 theme = "algae"
 editor = os.getenv("EDITOR") or "nvim"
 editor_cmd = terminal .. " -e " .. editor
@@ -62,6 +62,10 @@ local function client_menu_toggle_fn()
     end
 end
 -- }}}
+
+
+-- Notifications
+naughty.config.defaults['icon_size'] = beautiful.notification_icon_size or 128
 
 -- {{{ Menu
 -- Create a launcher widget and a main menu
@@ -177,7 +181,7 @@ root.buttons(gears.table.join(
 
 -- {{{ Key bindings
 globalkeys = gears.table.join(
-    awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
+    awful.key({ modkey,           }, "s", function() hotkeys_popup.show_help() end,
               {description="show help", group="awesome"}),
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
               {description = "view previous", group = "tag"}),
@@ -187,6 +191,7 @@ globalkeys = gears.table.join(
               {description = "go back", group = "tag"}),
     awful.key({ modkey,		 }, "e", revelation,
               {description = "Toggle Revelation", group="plugins"}),
+    -- TODO convert these to easy_async_with_shell
     awful.key({}, "XF86AudioPlay", function() awful.spawn.with_shell("playerctl play-pause") end,
 		      {description = "Toggle Music Player", group="media"}),
 	awful.key({}, "XF86AudioPrev", function() awful.spawn.with_shell("playerctl previous") end,
@@ -481,13 +486,11 @@ client.connect_signal("request::titlebars", function(c)
     -- buttons for the titlebar
     local buttons = gears.table.join(
         awful.button({ }, 1, function()
-            client.focus = c
-            c:raise()
+            c:emit_signal("request::activate", "titlebar", {raise = true})
             awful.mouse.client.move(c)
         end),
         awful.button({ }, 3, function()
-            client.focus = c
-            c:raise()
+            c:emit_signal("request::activate", "titlebar", {raise = true})
             awful.mouse.client.resize(c)
         end)
     )
@@ -520,10 +523,7 @@ end)
 
 -- Enable sloppy focus, so that focus follows mouse.
 client.connect_signal("mouse::enter", function(c)
-    if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-        and awful.client.focus.filter(c) then
-        client.focus = c
-    end
+    c:emit_signal("request::activate", "titlebar", {raise = true})
 end)
 
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)

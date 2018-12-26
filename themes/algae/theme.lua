@@ -347,12 +347,24 @@ function theme.at_screen_connect(s)
     local layout = wibox.container.background(wibox.container.margin(wibox.widget {s.mylayoutbox, layout = wibox.layout.align.horizontal }, 10, 10), "#3E8E62", gears.shape.rounded_rect)
 
     -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.noempty, awful.util.taglist_buttons)
+    s.mytaglist = awful.widget.taglist {
+        screen = s,
+        filter = awful.widget.taglist.filter.noempty,
+        buttons = awful.util.taglist_buttons
+    }
 
     -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
+    s.mytasklist = awful.widget.tasklist {
+        screen = s,
+        filter = awful.widget.tasklist.filter.currenttags,
+        buttons = awful.util.tasklist_buttons
+    }
 
-    s.mywibox = awful.wibar({ position = "bottom", screen = s, shape = gears.shape.rounded_rect})
+    s.mywibox = awful.wibar {
+        position = "bottom",
+        screen = s,
+        shape = gears.shape.rounded_rect
+    }
     s.mywibox:setup {
         layout = wibox.layout.align.horizontal,
         {
