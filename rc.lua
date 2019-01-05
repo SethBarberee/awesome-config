@@ -5,8 +5,6 @@ local awful = require("awful")
 require("awful.autofocus")
 -- Widget and layout library
 local wibox = require("wibox")
-local vicious = require("vicious")
-local radical = require("radical")
 -- Theme handling library
 local beautiful = require("beautiful")
 -- Notification library
@@ -123,17 +121,11 @@ awful.util.tasklist_buttons = gears.table.join(
         if c == client.focus then
 				c.minimized = true
         else
-				-- Without this, the following
-				-- :isvisible() makes no sense
-                c.minimized = false
-
-				if not c:isvisible() and c.first_tag then
-						c.first_tag:view_only()
-				end
-				-- This will also un-minimize
-                -- the client, if needed
-                client.focus = c
-                c:raise()
+                c:emit_signal(
+                    "request::activate",
+                    "tasklist",
+                    {raise = true}
+                )
         end
     end),
     awful.button({ }, 3, client_menu_toggle_fn()),
