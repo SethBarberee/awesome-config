@@ -22,6 +22,8 @@ local themes_dir = os.getenv("HOME") .. "/.config/awesome/themes/"
 local lain_icons = os.getenv("HOME") .."/.config/awesome/lain/icons/layout/default/"
 
 local laptop = require("util.laptop")
+local bindings = require("bindings")
+local menu = require("menu")
 local battery = nil
 
 --Wallpapers: [1] = morning, [2] = daytime, [3] = evening, [4] = night
@@ -220,7 +222,7 @@ theme.volume = lain.widget.pulse {
     end
 }
 -- Buttons actions for when interacting with the volume widget
-theme.volume.widget:buttons(awful.util.table.join(
+theme.volume.widget:buttons(gears.table.join(
     awful.button({}, 1, function() -- left click
         awful.spawn("pavucontrol")
     end),
@@ -350,14 +352,14 @@ function theme.at_screen_connect(s)
     s.mytaglist = awful.widget.taglist {
         screen = s,
         filter = awful.widget.taglist.filter.noempty,
-        buttons = awful.util.taglist_buttons
+        buttons = bindings.taglist_mouse
     }
 
     -- Create a tasklist widget
     s.mytasklist = awful.widget.tasklist {
         screen = s,
         filter = awful.widget.tasklist.filter.currenttags,
-        buttons = awful.util.tasklist_buttons
+        buttons = bindings.tasklist_mouse
     }
 
     s.mywibox = awful.wibar {
@@ -370,7 +372,6 @@ function theme.at_screen_connect(s)
         {
 	-- Left widgets
         layout = wibox.layout.fixed.horizontal,
-                mylauncher,
                 s.mytaglist,
                 s.mypromptbox,
 		spacer_small,
