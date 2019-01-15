@@ -1,4 +1,8 @@
 -- Standard awesome library
+local awesome = _G.awesome
+local client = _G.client
+local screen = _G.screen
+local root = _G.root
 local gears = require("gears")
 local timer = require("gears.timer")
 local awful = require("awful")
@@ -23,6 +27,33 @@ local rules = require("rules")
 local common = require("awful.widget.common")
 
 local config_path = awful.util.get_configuration_dir()
+
+
+-- {{{ Error handling
+-- Check if awesome encountered an error during startup and fell back to
+-- another config (This code will only ever execute for the fallback config)
+if awesome.startup_errors then
+    naughty.notify({ preset = naughty.config.presets.critical,
+                     title = "Oops, there were errors during startup!",
+                     text = awesome.startup_errors })
+end
+
+-- Handle runtime errors after startup
+do
+    local in_error = false
+    awesome.connect_signal("debug::error", function (err)
+        -- Make sure we don't go into an endless error loop
+        if in_error then return end
+        in_error = true
+
+        naughty.notify({ preset = naughty.config.presets.critical,
+                         title = "Oops, an error happened!",
+                         text = tostring(err) })
+        in_error = false
+    end)
+end
+-- }}}
+
 
 -- Add the custom tags manually
 dofile(config_path .. "/util/tag.lua")
@@ -141,15 +172,20 @@ end)
 
 -- Enable sloppy focus, so that focus follows mouse.
 client.connect_signal("mouse::enter", function(c)
-    if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-        and awful.client.focus.filter(c) then
-        client.focus = c
-    end
+    c:emit_signal("request::activate", "mouse_enter", {raise = true})
 end)
 
-client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
+client.connect_signal("focus", function(c)
+    if c == 1 then
+        c.border_color = beautiful.border_focus
+    elseif c.maximized then
+        c.border_width = 0
+    else
+        c.border_width = beautiful.border_width
+        c.border_color = beautiful.border_focus
+    end
+end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
--- }}}
 
 -- {{{ Autostart section
 --util.utilities.run_once("ckb")
