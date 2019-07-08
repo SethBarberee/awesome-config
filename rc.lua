@@ -20,6 +20,9 @@ local revelation = require("revelation")
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
 
+local autostart = require("autostart") -- my autostart programs
+local tagadder = require("tagadder") -- tag manipulation widget
+
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
 -- another config (This code will only ever execute for the fallback config)
@@ -111,9 +114,6 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
 -- }}}
 
--- Keyboard map indicator and switcher
-mykeyboardlayout = awful.widget.keyboardlayout()
-
 -- {{{ Wibar
 -- Create a textclock widget
 mytextclock = wibox.widget.textclock()
@@ -138,22 +138,22 @@ local search_box = wibox.widget {
 search_box:buttons(awful.util.table.join(awful.button({}, 1, function () awful.spawn('rofi -show run') end)))
 
 -- Create a wibox for each screen and add it
---local taglist_buttons = gears.table.join(
---                    awful.button({ }, 1, function(t) t:view_only() end),
---                    awful.button({ modkey }, 1, function(t)
---                                              if client.focus then
---                                                  client.focus:move_to_tag(t)
---                                              end
---                                          end),
---                    awful.button({ }, 3, awful.tag.viewtoggle),
---                    awful.button({ modkey }, 3, function(t)
---                                              if client.focus then
---                                                  client.focus:toggle_tag(t)
---                                              end
---                                          end),
---                    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
---                    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
---                )
+local taglist_buttons = gears.table.join(
+                    awful.button({ }, 1, function(t) t:view_only() end),
+                    awful.button({ modkey }, 1, function(t)
+                                              if client.focus then
+                                                  client.focus:move_to_tag(t)
+                                              end
+                                          end),
+                    awful.button({ }, 3, awful.tag.viewtoggle),
+                    awful.button({ modkey }, 3, function(t)
+                                              if client.focus then
+                                                  client.focus:toggle_tag(t)
+                                              end
+                                          end),
+                    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
+                    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
+                )
 
 local tasklist_buttons = gears.table.join(
                      awful.button({ }, 1, function (c)
@@ -190,10 +190,16 @@ screen.connect_signal("request::wallpaper", function(s)
 end)
 
 
-
 screen.connect_signal("request::desktop_decoration", function(s)
     -- Each screen has its own tag table.
-    awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
+    awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[2])
+
+    -- Create a taglist widget
+    s.mytaglist = awful.widget.taglist {
+        screen  = s,
+        filter  = awful.widget.taglist.filter.all,
+        buttons = taglist_buttons
+    }
 
 
     -- Create a promptbox for each screen
@@ -277,29 +283,75 @@ screen.connect_signal("request::desktop_decoration", function(s)
     }
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s })
+    s.mywibox = awful.wibar({ position = "top", screen = s, bg = "transparent", type = 'dock' })
 
-    s.bottombox = awful.wibar({ position = "bottom", screen = s, bg = "tranparent" })
+    s.bottombox = awful.wibar({ position = "bottom", screen = s, bg = "tranparent", type = 'dock' })
 
     -- Add widgets to the wibox
     s.mywibox:setup {
-        layout = wibox.layout.align.horizontal,
-        { -- Left widgets
-            layout = wibox.layout.fixed.horizontal,
-            mylauncher,
-            s.mypromptbox,
+        -- Taken from https://www.reddit.com/r/unixporn/comments/c5sc6b/awesome_nebula_blaze
+        layout = wibox.layout.manual,
+        { -- Left widget space setup
+            point = { x = 0, y = 0 },
+            forced_width = awful.screen.focused().geometry.width/2 - 60,
+            forced_height = 50,
+            widget = wibox.container.background,
+            -- bg = "#33ff8800",
+            {
+                layout = wibox.layout.fixed.horizontal,
+                {
+                    widget = wibox.container.margin,
+                    top = 3,
+                    bottom = 3,
+                    left = 5,
+                    {
+                        layout = wibox.layout.fixed.horizontal,
+                        mylauncher,
+                        s.mytaglist,
+                        tagadder,
+                        s.mypromptbox,
+                    }
+                }
+            },
         },
-        {
-            -- Just using a blank textbox to space things out
-            layout = wibox.layout.fixed.horizontal,
-            wibox.widget.textbox,
+        { -- Middle widget space setup
+            point = { x = awful.screen.focused().geometry.width/2 - 60, y = 0 },
+            forced_width = 120,
+            forced_height = 50,
+            widget = wibox.container.background,
+            -- bg = "#ff008800",
+            {
+                top = 3,
+                widget = wibox.container.margin,
+                {
+                    widget = wibox.container.place,
+                    {
+                        layout = wibox.layout.fixed.horizontal,
+                        mytextclock,
+                    },
+                },
+            },
         },
-        { -- Right widgets
-            layout = wibox.layout.fixed.horizontal,
-            mykeyboardlayout,
-            wibox.widget.systray(),
-            mytextclock,
-            s.mylayoutbox,
+        { -- Right widget space setup
+            point = { x = awful.screen.focused().geometry.width/2 + 60, y = 0 },
+            forced_width = awful.screen.focused().geometry.width/2 - 60,
+            forced_height = 50,
+            widget = wibox.container.background,
+            -- bg = "#00880000",
+            {
+                widget = wibox.container.margin,
+                top = 3,
+                bottom  = 3,
+                right = 5,
+                {
+                    widget = wibox.container.place,
+                    halign = "right",
+                    {
+                        layout = wibox.layout.fixed.horizontal,
+                        s.mylayoutbox,
+                    }
+                },
+            },
         },
     }
 
@@ -307,6 +359,11 @@ screen.connect_signal("request::desktop_decoration", function(s)
         layout = wibox.layout.align.horizontal,
         search_box,
         s.mytasklist,
+        {
+            wibox.widget.systray(),
+            halign = "right",
+            widget = wibox.container.place
+        }
     }
 end)
 -- }}}
@@ -481,9 +538,13 @@ mediakeys = gears.table.join (
               {description = "Increase Volume", group="media"}),
     awful.key({}, "XF86AudioLowerVolume", function() awful.spawn.with_shell("ponymix decrease 10") end,
 		      {description = "Decrease Volume", group="media"}),
-    awful.key({}, "XF86MonBrightnessUp", function() awful.spawn.with_shell("xbacklight -inc 5") end,
+    awful.key({}, "XF86MonBrightnessUp", function() 
+        awful.spawn.with_shell("xbacklight -inc 5")
+    end,
 		      {description = "Increase Brightness", group="monitor"}),
-    awful.key({}, "XF86MonBrightnessDown", function() awful.spawn.with_shell("xbacklight -dec 5") end,
+    awful.key({}, "XF86MonBrightnessDown", function() 
+        awful.spawn.with_shell("xbacklight -dec 5")
+    end,
 		      {description = "Decrease Brightness", group="monitor"})
 )
 
@@ -618,6 +679,14 @@ awful.rules.rules = {
     -- Set Firefox to always map on the tag named "2" on screen 1.
     -- { rule = { class = "Firefox" },
     --   properties = { screen = 1, tag = "2" } },
+    { rule = { class = "glava" },
+        properties = {
+            titlebars_enabled = false,
+            border_width = 0,
+            maximized_vertical = true,
+            maximized_horizontal = true
+        }
+    },
 }
 -- }}}
 
@@ -691,84 +760,100 @@ end)
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 
+-- }}}
+-- Basically new system but same old layout
+--naughty.connect_signal("request::display", function(n)
+--    naughty.layout.box { notification = n}
+--end)
 
-tag.connect_signal("property::selected", function()
-    -- TODO I should probably test for when revelation is used
-    local focused_screen = awful.screen.focused()
-    local tag_select = focused_screen.selected_tag
-    -- TODO create squares equal to number of tags
-    -- TODO color respective tag number
-    -- Makes sure we don't get nil values
-    if tag_select then
-        local tag_popup = awful.popup {
-            widget = {
-                awful.widget.taglist {
-                    screen = focused_screen,
-                    filter = awful.widget.taglist.filter.all,
-                    -- TODO should probably use widget template here
-                    widget_template = {
-                       {
-                            {
-                                {
-                                    {
-                                        {
-                                            id     = 'index_role',
-                                            widget = wibox.widget.textbox,
-                                        },
-                                        margins = 4,
-                                        widget  = wibox.container.margin,
-                                    },
-                                    bg     = '#dddddd',
-                                    shape  = gears.shape.circle,
-                                    widget = wibox.container.background,
-                                },
-                                {
-                                    {
-                                        id     = 'icon_role',
-                                        widget = wibox.widget.imagebox,
-                                    },
-                                    margins = 2,
-                                    widget  = wibox.container.margin,
-                                },
-                                {
-                                    id     = 'text_role',
-                                    widget = wibox.widget.textbox,
-                                },
-                                layout = wibox.layout.fixed.horizontal,
-                            },
-                            left  = 18,
-                            right = 18,
-                            widget = wibox.container.margin
-                        },
-                        id     = 'background_role',
-                        widget = wibox.container.background,
-                    }
-                },
-                -- TODO maybe add some margin here
-                {
-                    -- Use index to mark which tag we are on
-                    text = "Tag " .. tag_select.index,
-                    widget = wibox.widget.textbox
-                },
-                layout = wibox.layout.fixed.horizontal,
+-- TODO HERE BE DRAGONS >>> TESTING GROUND
+
+local notif_wb = awful.wibar {
+    position = 'bottom',
+    height   = 48,
+    ontop = true,
+    visible  = #naughty.active > 0,
+}
+
+notif_wb:setup {
+    nil,
+    {
+        base_layout = wibox.widget {
+            spacing_widget = wibox.widget {
+                orientation = 'vertical',
+                span_ratio  = 0.5,
+                widget      = wibox.widget.separator,
             },
-            ontop = true,
-            placement = awful.placement.centered,
-            shape = gears.shape.rounded_rect,
-            hide_on_right_click = true
-        }
-        -- So basically timeout the popup after 1 second if I don't click it
-        -- trying to make it mimic openbox's popup that way
-        gears.timer {
-            timeout = 1,
-            autostart = true,
-            callback = function(self)
-                -- Hide the popup
-                tag_popup.visible = false
-                self:stop()
-            end
-        }
-        -- TODO is it better to create and stop or just restart it again
+            forced_height = 30,
+            spacing       = 3,
+            layout        = wibox.layout.flex.horizontal
+        },
+        widget_template = {
+            {
+                naughty.widget.icon,
+                {
+                    naughty.widget.title,
+                    naughty.widget.message,
+                    {
+                        layout = wibox.widget {
+                            -- Adding the wibox.widget allows to share a
+                            -- single instance for all spacers.
+                            spacing_widget = wibox.widget {
+                                orientation = 'vertical',
+                                span_ratio  = 0.9,
+                                widget      = wibox.widget.separator,
+                            },
+                            spacing = 3,
+                            layout  = wibox.layout.flex.horizontal
+                        },
+                        widget = naughty.list.widgets,
+                    },
+                    layout = wibox.layout.align.vertical
+                },
+                spacing = 10,
+                fill_space = true,
+                layout  = wibox.layout.fixed.horizontal
+            },
+            margins = 5,
+            widget  = wibox.container.margin
+        },
+        widget = naughty.list.notifications,
+    },
+    -- Add a button to dismiss all notifications, because why not.
+    {
+        {
+            text   = 'Dismiss all',
+            align  = 'center',
+            valign = 'center',
+            widget = wibox.widget.textbox
+        },
+        buttons = gears.table.join(
+            awful.button({ }, 1, function() naughty.destroy_all_notifications() end)
+        ),
+        forced_width       = 75,
+        shape              = gears.shape.rounded_bar,
+        shape_border_width = 1,
+        shape_border_color = beautiful.bg_highlight,
+        widget = wibox.container.background
+    },
+    layout = wibox.layout.align.horizontal
+}
+
+-- We don't want to have that bar all the time, only when there is content.
+naughty.connect_signal('property::active', function()
+    notif_wb.visible = #naughty.active > 0
+end)
+
+
+tag.connect_signal("property::selected", function (t)
+    if t.selected then
+        t.name = " " .. t.name .. " "
+    else
+        t.name = t.name:gsub("^[ ]*",""):gsub("[ ]*$","")
     end
 end)
--- }}}
+
+-- Spawn all the programs needed at startup
+for _,v in pairs(autostart) do
+    awful.spawn.once(v)
+end
