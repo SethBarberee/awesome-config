@@ -16,6 +16,7 @@ local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup")
 
 local revelation = require("revelation")
+local battery = require("awesome-upower-battery")
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
@@ -115,6 +116,23 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- }}}
 
 -- {{{ Wibar
+
+-- Create battery widget
+-- TODO Add icon
+local bat = battery (
+{
+    settings = function()
+        if bat_now.status == "Discharging" then
+            widget:set_markup(string.format("%3d", bat_now.perc) .. "% ")
+            return
+        end
+        -- We must be on AC
+        --baticon:set_image(beautiful.ac)
+        widget:set_markup(bat_now.status .. " " .. bat_now.time .. " ")
+    end
+}
+)
+
 -- Create a textclock widget
 mytextclock = wibox.widget.textclock()
 local month_calendar = awful.widget.calendar_popup.month()
@@ -348,6 +366,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     halign = "right",
                     {
                         layout = wibox.layout.fixed.horizontal,
+                        bat.widget,
                         s.mylayoutbox,
                     }
                 },
