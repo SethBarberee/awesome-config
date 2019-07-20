@@ -13,7 +13,7 @@ local theme = {}
 theme.font          = "sans 9"
 
 theme.bg_normal     = "#222222"
-theme.bg_focus      = "#535d6c"
+theme.bg_focus      = "#F06576"
 theme.bg_urgent     = "#ff0000"
 theme.bg_minimize   = "#444444"
 theme.bg_systray    = theme.bg_normal
@@ -26,7 +26,7 @@ theme.fg_minimize   = "#ffffff"
 theme.useless_gap   = 0
 theme.border_width  = dpi(1)
 theme.border_normal = "#000000"
-theme.border_focus  = "#535d6c"
+theme.border_focus  = theme.bg_focus
 theme.border_marked = "#91231c"
 
 -- There are other variable sets
@@ -55,11 +55,14 @@ theme.tasklist_bg = "#ffffff"
 theme.tasklist_bg_focus = "#ffffff"
 theme.tasklist_fg_focus = "#000000"
 
+theme.wibar_fg = "#ffffff"
+
 -- Variables set for theming notifications:
 -- notification_font
 -- notification_[bg|fg]
 -- notification_[width|height|margin]
 -- notification_[border_color|border_width|shape|opacity]
+
 
 -- Variables set for theming the menu:
 -- menu_[bg|fg]_[normal|focus]
