@@ -143,17 +143,23 @@ search_text.text = 'Search'
 local search_box = wibox.widget {
     {
         {
-            -- TODO add iconbox here
-            search_text,
-            layout = wibox.layout.fixed.horizontal,
+            {
+                -- TODO add iconbox here
+                search_text,
+                layout = wibox.layout.fixed.horizontal,
+            },
+            left = 3,
+            right = 3,
+            widget = wibox.container.margin,
         },
-        bg = "#ff0000",
+        bg = "#DE4C63", -- Taken from pywal
+        fg = "#ffffff",
         widget = wibox.container.background,
     },
     layout = wibox.layout.fixed.horizontal,
 }
 -- Lets me left click to pull up rofi
-search_box:buttons(awful.util.table.join(awful.button({}, 1, function () awful.spawn('rofi -show run') end)))
+search_box:buttons(awful.util.table.join(awful.button({}, 1, function () awful.spawn('rofi -combi-modi window,drun,run -show combi -modi combi') end)))
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -225,6 +231,51 @@ screen.connect_signal("request::desktop_decoration", function(s)
     -- Create an imagebox widget which will contain an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
     s.mylayoutbox = awful.widget.layoutbox(s)
+    
+    -- Add a fancy popup when we change layouts
+    -- Taken from: https://github.com/raphaelfournier/Dotfiles/blob/master/awesome/.config/awesome/rc.lua
+    local layoutpopup = awful.popup {
+        widget = wibox.widget {
+            awful.widget.layoutlist {
+                source      = awful.widget.layoutlist.source.default_layouts,
+                screen      = 1,
+                base_layout = wibox.widget {
+                    spacing         = 5,
+                    forced_num_cols = 2,
+                    layout          = wibox.layout.grid.vertical,
+                },
+                widget_template = {
+                    {
+                        {
+                            id            = 'icon_role',
+                            forced_height = 46,
+                            forced_width  = 46,
+                            widget        = wibox.widget.imagebox,
+                        },
+                        margins = 4,
+                        widget  = wibox.container.margin,
+                    },
+                    id              = 'background_role',
+                    forced_width    = 48,
+                    forced_height   = 48,
+                    shape           = gears.shape.rounded_rect,
+                    widget          = wibox.container.background,
+                },
+            },
+            margins = 8,
+            widget  = wibox.container.margin,
+        },
+        -- TODO wrap in another margin container to move it down
+        placement         = awful.placement.top_right,
+        border_color      = beautiful.border_focus,
+        border_width      = beautiful.border_width,
+        shape             = gears.shape.infobubble,
+        hide_on_right_click = true,
+        visible = false,
+        ontop = true,
+    }
+    layoutpopup:bind_to_widget(s.mylayoutbox)
+
     s.mylayoutbox:buttons(gears.table.join(
                            awful.button({ }, 1, function () awful.layout.inc( 1) end),
                            awful.button({ }, 3, function () awful.layout.inc(-1) end),
@@ -270,7 +321,6 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     },
                     {
                         {
-                            -- TODO find way to override fg for client
                             id = 'text_role',
                             widget = wibox.widget.textbox,
                         },
@@ -285,8 +335,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                 widget = wibox.container.margin
             },
             -- Set background from theme
-            -- TODO maybe set a fallback
-            bg = beautiful.tasklist_bg,
+            bg = beautiful.tasklist_bg or "#ffffff",
             widget = wibox.container.background,
             -- Adds tooltips to each object
             create_callback = function(self, c, index, objects)
@@ -300,10 +349,21 @@ screen.connect_signal("request::desktop_decoration", function(s)
         }
     }
 
-    -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s, bg = "transparent", type = 'dock' })
+    -- Create the wibars
+    s.mywibox = awful.wibar({ 
+        position = "top", 
+        screen = s, 
+        bg = "transparent", 
+        fg = beautiful.wibar_fg or "#ffffff",
+        type = 'dock' 
+    })
 
-    s.bottombox = awful.wibar({ position = "bottom", screen = s, bg = "tranparent", type = 'dock' })
+    s.bottombox = awful.wibar({ 
+        position = "bottom", 
+        screen = s, 
+        bg = "tranparent", 
+        type = 'dock' 
+    })
 
     -- Add widgets to the wibox
     s.mywibox:setup {
