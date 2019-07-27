@@ -23,6 +23,7 @@ require("awful.hotkeys_popup.keys")
 
 local autostart = require("autostart") -- my autostart programs
 local tagadder = require("tagadder") -- tag manipulation widget
+local volume = require("volume-widget")
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -426,6 +427,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     halign = "right",
                     {
                         layout = wibox.layout.fixed.horizontal,
+                        volume,
                         bat.widget,
                         s.mylayoutbox,
                     }
@@ -613,19 +615,19 @@ mediakeys = gears.table.join (
 	          {description = "Go to Next Song", group="media"}),
 	awful.key({}, "XF86AudioStop", function() awful.spawn.with_shell("playerctl stop") end,
 	          {description = "Stop Music", group="media"}),
-	awful.key({}, "XF86AudioMute", function() awful.spawn.with_shell("ponymix toggle") end,
+	awful.key({}, "XF86AudioMute", function() volume.mute() end,
 	          {description = "Toggle Mute", group="media"}),
-    awful.key({}, "XF86AudioRaiseVolume", function() awful.spawn.with_shell("ponymix increase 10") end,
+        awful.key({}, "XF86AudioRaiseVolume", function() volume.raise_volume() end,
               {description = "Increase Volume", group="media"}),
-    awful.key({}, "XF86AudioLowerVolume", function() awful.spawn.with_shell("ponymix decrease 10") end,
+        awful.key({}, "XF86AudioLowerVolume", function() volume.lower_volume() end,
 		      {description = "Decrease Volume", group="media"}),
-    awful.key({}, "XF86MonBrightnessUp", function() 
-        awful.spawn.with_shell("xbacklight -inc 5")
-    end,
+        awful.key({}, "XF86MonBrightnessUp", function() 
+            awful.spawn.with_shell("xbacklight -inc 5")
+        end,
 		      {description = "Increase Brightness", group="monitor"}),
-    awful.key({}, "XF86MonBrightnessDown", function() 
-        awful.spawn.with_shell("xbacklight -dec 5")
-    end,
+        awful.key({}, "XF86MonBrightnessDown", function() 
+            awful.spawn.with_shell("xbacklight -dec 5")
+        end,
 		      {description = "Decrease Brightness", group="monitor"})
 )
 
