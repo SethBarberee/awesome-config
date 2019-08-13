@@ -372,7 +372,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
         layout = wibox.layout.manual,
         { -- Left widget space setup
             point = { x = 0, y = 0 },
-            forced_width = awful.screen.focused().geometry.width/2 - 60,
+            forced_width = s.geometry.width/2 - 70,
             forced_height = 50,
             widget = wibox.container.background,
             -- bg = "#33ff8800",
@@ -394,8 +394,8 @@ screen.connect_signal("request::desktop_decoration", function(s)
             },
         },
         { -- Middle widget space setup
-            point = { x = awful.screen.focused().geometry.width/2 - 60, y = 0 },
-            forced_width = 120,
+            point = { x = s.geometry.width/2 - 70, y = 0 },
+            forced_width = 140,
             forced_height = 50,
             widget = wibox.container.background,
             -- bg = "#ff008800",
@@ -412,8 +412,8 @@ screen.connect_signal("request::desktop_decoration", function(s)
             },
         },
         { -- Right widget space setup
-            point = { x = awful.screen.focused().geometry.width/2 + 60, y = 0 },
-            forced_width = awful.screen.focused().geometry.width/2 - 60,
+            point = { x = s.geometry.width/2 + 70, y = 0 },
+            forced_width = s.geometry.width/2 - 70,
             forced_height = 50,
             widget = wibox.container.background,
             -- bg = "#00880000",
