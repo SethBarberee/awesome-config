@@ -1,0 +1,1 @@
+/home/seth/.cache/wal/colors.lua
