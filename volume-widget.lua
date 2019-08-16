@@ -57,7 +57,8 @@ function volume.mute()
         update_volume()
     else 
         muted = true
-        volume.text = "Muted"
+        volume.textbox.text = "Muted"
+        volume.bar:set_value(tonumber(stdout))
     end
 end
 
