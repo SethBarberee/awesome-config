@@ -23,7 +23,6 @@ require("awful.hotkeys_popup.keys")
 
 local autostart = require("autostart") -- my autostart programs
 local tagadder = require("tagadder") -- tag manipulation widget
-local volume = require("volume-widget")
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -117,6 +116,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- }}}
 
 -- {{{ Wibar
+local volume = require("volume-widget") -- custom volume widget
 
 -- Create battery widget
 -- TODO Add icon
