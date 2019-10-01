@@ -1,5 +1,7 @@
 local autostart = {
     "compton --config " .. os.getenv("HOME") .. "/.config/compton/compton.conf",
-    "libinput-gestures-setup start"
+    "onboard",
+    "libinput-gestures-setup start",
+    "light-locker"
 }
 return autostart
