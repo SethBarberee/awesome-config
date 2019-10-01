@@ -2,6 +2,7 @@
 -- found (e.g. lgi). If LuaRocks is not installed, do nothing.
 pcall(require, "luarocks.loader")
 
+-- {{{ Import Modules
 -- Standard awesome library
 local gears = require("gears")
 local awful = require("awful")
@@ -23,6 +24,8 @@ require("awful.hotkeys_popup.keys")
 
 local autostart = require("autostart") -- my autostart programs
 local tagadder = require("tagadder") -- tag manipulation widget
+
+-- }}}
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -61,7 +64,7 @@ beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/wal/theme.lua
 revelation.init()
 
 -- This is used later as the default terminal and editor to run.
-terminal = "termite"
+terminal = "kitty"
 editor = os.getenv("EDITOR") or "nvim"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -115,7 +118,7 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
 -- }}}
 
--- {{{ Wibar
+-- {{{ Widgets/Wibar
 local volume = require("volume-widget") -- custom volume widget
 
 -- Create battery widget
@@ -360,7 +363,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
     })
 
     s.bottombox = awful.wibar({ 
-        position = "bottom", 
+        position = "top", 
         screen = s, 
         bg = "tranparent", 
         type = 'dock' 
@@ -558,7 +561,12 @@ globalkeys = gears.table.join(
               {description = "lua execute prompt", group = "awesome"}),
     -- Menubar
     awful.key({ modkey }, "p", function() menubar.show() end,
-              {description = "show the menubar", group = "launcher"})
+              {description = "show the menubar", group = "launcher"}),
+    -- Screen Locking
+    awful.key({ modkey }, "l", function() awful.spawn.with_shell("light-locker-command -l") end,
+              {description = "Lock PC", group="media"}),
+    awful.key({ modkey }, "t", function() awful.spawn.with_shell("rofi -modi 'theme:~/.config/rofi/rofi-wal-theme-switcher.sh' -show theme") end,
+              {description = "Change wal theme", group="media"})
 )
 
 clientkeys = gears.table.join(
@@ -691,7 +699,9 @@ end
 
 clientbuttons = gears.table.join(
     awful.button({ }, 1, function (c)
-        c:emit_signal("request::activate", "mouse_click", {raise = true})
+        if c.name ~= "CellWriter" and c.name ~= "Onboard" then
+            c:emit_signal("request::activate", "mouse_click", {raise = true})
+        end
     end),
     awful.button({ modkey }, 1, function (c)
         c:emit_signal("request::activate", "mouse_click", {raise = true})
@@ -751,6 +761,9 @@ awful.rules.rules = {
           "AlarmWindow",  -- Thunderbird's calendar.
           "ConfigManager",  -- Thunderbird's about:config.
           "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
+        },
+        type = {
+            "dialog",
         }
       }, properties = { floating = true }},
 
@@ -837,106 +850,19 @@ end)
 
 -- Enable sloppy focus, so that focus follows mouse.
 client.connect_signal("mouse::enter", function(c)
-    c:emit_signal("request::activate", "mouse_enter", {raise = false})
+    if c.name ~= "CellWriter" and c.name ~= "Onboard" then
+        c:emit_signal("request::activate", "mouse_enter", {raise = false})
+    end
 end)
 
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 
--- }}}
--- Basically new system but same old layout
---naughty.connect_signal("request::display", function(n)
---    naughty.layout.box { notification = n}
---end)
-
--- TODO HERE BE DRAGONS >>> TESTING GROUND
-
-local notif_wb = awful.wibar {
-    position = 'bottom',
-    height   = 48,
-    ontop = true,
-    visible  = #naughty.active > 0,
-}
-
-notif_wb:setup {
-    nil,
-    {
-        base_layout = wibox.widget {
-            spacing_widget = wibox.widget {
-                orientation = 'vertical',
-                span_ratio  = 0.5,
-                widget      = wibox.widget.separator,
-            },
-            forced_height = 30,
-            spacing       = 3,
-            layout        = wibox.layout.flex.horizontal
-        },
-        widget_template = {
-            {
-                naughty.widget.icon,
-                {
-                    naughty.widget.title,
-                    naughty.widget.message,
-                    {
-                        layout = wibox.widget {
-                            -- Adding the wibox.widget allows to share a
-                            -- single instance for all spacers.
-                            spacing_widget = wibox.widget {
-                                orientation = 'vertical',
-                                span_ratio  = 0.9,
-                                widget      = wibox.widget.separator,
-                            },
-                            spacing = 3,
-                            layout  = wibox.layout.flex.horizontal
-                        },
-                        widget = naughty.list.widgets,
-                    },
-                    layout = wibox.layout.align.vertical
-                },
-                spacing = 10,
-                fill_space = true,
-                layout  = wibox.layout.fixed.horizontal
-            },
-            margins = 5,
-            widget  = wibox.container.margin
-        },
-        widget = naughty.list.notifications,
-    },
-    -- Add a button to dismiss all notifications, because why not.
-    {
-        {
-            text   = 'Dismiss all',
-            align  = 'center',
-            valign = 'center',
-            widget = wibox.widget.textbox
-        },
-        buttons = gears.table.join(
-            awful.button({ }, 1, function() naughty.destroy_all_notifications() end)
-        ),
-        forced_width       = 75,
-        shape              = gears.shape.rounded_bar,
-        shape_border_width = 1,
-        shape_border_color = beautiful.bg_highlight,
-        widget = wibox.container.background
-    },
-    layout = wibox.layout.align.horizontal
-}
-
--- We don't want to have that bar all the time, only when there is content.
-naughty.connect_signal('property::active', function()
-    notif_wb.visible = #naughty.active > 0
-end)
-
-
-tag.connect_signal("property::selected", function (t)
-    if t.selected then
-        t.name = " " .. t.name .. " "
-    else
-        t.name = t.name:gsub("^[ ]*",""):gsub("[ ]*$","")
-    end
-end)
+dofile("/home/seth/.config/awesome/tag_notify.lua")
 
 -- Spawn all the programs needed at startup
 for _,v in pairs(autostart) do
     awful.spawn.once(v)
 end
+
+--- vim: foldmethod=marker fdl=0

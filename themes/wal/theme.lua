@@ -8,6 +8,11 @@ local dpi = xresources.apply_dpi
 local gfs = require("gears.filesystem")
 local themes_path = gfs.get_themes_dir()
 
+local awful = require('awful')
+local wibox = require('wibox')
+local gears = require('gears')
+local naughty = require('naughty')
+
 -- TODO find way to load from ~/.cache and not by symlinking to awesome
 -- directory
 local pywal = require("colors")
@@ -16,23 +21,26 @@ local theme = {}
 
 theme.font          = "sans 9"
 
+-- {{{ Background
 theme.bg_normal     = pywal.background
 theme.bg_focus      = pywal.color11
 theme.bg_urgent     = pywal.color2
 theme.bg_minimize   = pywal.color1
 theme.bg_systray    = theme.bg_normal
-
+-- }}}
+-- {{{ Foreground
 theme.fg_normal     = pywal.foreground
 theme.fg_focus      = "#ffffff"
 theme.fg_urgent     = "#ffffff"
 theme.fg_minimize   = "#ffffff"
-
+-- }}}
+-- {{{ Border Settings
 theme.useless_gap   = 0
 theme.border_width  = dpi(1)
 theme.border_normal = theme.bg_normal
 theme.border_focus  = theme.bg_focus
 theme.border_marked = "#91231c"
-
+-- }}}
 -- There are other variable sets
 -- overriding the default one when
 -- defined, the sets are:
@@ -46,6 +54,7 @@ theme.border_marked = "#91231c"
 -- Example:
 --theme.taglist_bg_focus = "#ff0000"
 
+-- {{{ Taglist Settings
 -- Generate taglist squares:
 local taglist_square_size = dpi(4)
 theme.taglist_squares_sel = theme_assets.taglist_squares_sel(
@@ -56,6 +65,7 @@ theme.taglist_squares_unsel = theme_assets.taglist_squares_unsel(
 )
 
 theme.taglist_bg_focus = pywal.color14 -- Pywal blue
+-- }}}
 
 theme.tasklist_bg = "#ffffff"
 theme.tasklist_bg_focus = "#ffffff"
@@ -83,6 +93,7 @@ theme.menu_width  = dpi(100)
 -- beautiful.variable in your rc.lua
 --theme.bg_widget = "#cc0000"
 
+-- {{{ Titlebar images
 -- Define the image to load
 theme.titlebar_close_button_normal = themes_path.."default/titlebar/close_normal.png"
 theme.titlebar_close_button_focus  = themes_path.."default/titlebar/close_focus.png"
@@ -109,6 +120,7 @@ theme.titlebar_maximized_button_normal_inactive = themes_path.."default/titlebar
 theme.titlebar_maximized_button_focus_inactive  = themes_path.."default/titlebar/maximized_focus_inactive.png"
 theme.titlebar_maximized_button_normal_active = themes_path.."default/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active  = themes_path.."default/titlebar/maximized_focus_active.png"
+-- }}}
 
 -- Set wallpaper from wal. If we don't have one, set the default
 theme.wallpaper = pywal.wallpaper
@@ -116,6 +128,7 @@ if theme.wallpaper == 'None' then
     theme.wallpaper = themes_path .. "default/background.png"
 end
 
+-- {{{ Layout images
 -- You can use your own layout icons like this:
 theme.layout_fairh = themes_path.."default/layouts/fairhw.png"
 theme.layout_fairv = themes_path.."default/layouts/fairvw.png"
@@ -133,6 +146,7 @@ theme.layout_cornernw = themes_path.."default/layouts/cornernww.png"
 theme.layout_cornerne = themes_path.."default/layouts/cornernew.png"
 theme.layout_cornersw = themes_path.."default/layouts/cornersww.png"
 theme.layout_cornerse = themes_path.."default/layouts/cornersew.png"
+-- }}}
 
 -- Generate Awesome icon:
 theme.awesome_icon = theme_assets.awesome_icon(
@@ -143,6 +157,85 @@ theme.awesome_icon = theme_assets.awesome_icon(
 -- from /usr/share/icons and /usr/share/icons/hicolor will be used.
 theme.icon_theme = nil
 
+-- {{{ Notiification Wibar
+local notif_wb = awful.wibar {
+    position = 'bottom',
+    height   = 48,
+    ontop = true,
+    visible  = #naughty.active > 0,
+}
+
+notif_wb:setup {
+    nil,
+    {
+        base_layout = wibox.widget {
+            spacing_widget = wibox.widget {
+                orientation = 'vertical',
+                span_ratio  = 0.5,
+                widget      = wibox.widget.separator,
+            },
+            forced_height = 30,
+            spacing       = 3,
+            layout        = wibox.layout.flex.horizontal
+        },
+        widget_template = {
+            {
+                naughty.widget.icon,
+                {
+                    naughty.widget.title,
+                    naughty.widget.message,
+                    {
+                        layout = wibox.widget {
+                            -- Adding the wibox.widget allows to share a
+                            -- single instance for all spacers.
+                            spacing_widget = wibox.widget {
+                                orientation = 'vertical',
+                                span_ratio  = 0.9,
+                                widget      = wibox.widget.separator,
+                            },
+                            spacing = 3,
+                            layout  = wibox.layout.flex.horizontal
+                        },
+                        widget = naughty.list.widgets,
+                    },
+                    layout = wibox.layout.align.vertical
+                },
+                spacing = 10,
+                fill_space = true,
+                layout  = wibox.layout.fixed.horizontal
+            },
+            margins = 5,
+            widget  = wibox.container.margin
+        },
+        widget = naughty.list.notifications,
+    },
+    -- Add a button to dismiss all notifications, because why not.
+    {
+        {
+            text   = 'Dismiss all',
+            align  = 'center',
+            valign = 'center',
+            widget = wibox.widget.textbox
+        },
+        buttons = gears.table.join(
+            awful.button({ }, 1, function() naughty.destroy_all_notifications() end)
+        ),
+        forced_width       = 75,
+        shape              = gears.shape.rounded_bar,
+        shape_border_width = 1,
+        shape_border_color = theme.bg_highlight,
+        widget = wibox.container.background
+    },
+    layout = wibox.layout.align.horizontal
+}
+
+-- We don't want to have that bar all the time, only when there is content.
+naughty.connect_signal('property::active', function()
+    notif_wb.visible = #naughty.active > 0
+end)
+
+-- }}}
+
 return theme
 
--- vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:textwidth=80
+-- vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:textwidth=80:foldmethod=marker:fdl=0
