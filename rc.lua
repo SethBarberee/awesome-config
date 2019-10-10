@@ -59,7 +59,7 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
-beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/wal/theme.lua")
+beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/windows/theme.lua")
 
 revelation.init()
 
@@ -142,68 +142,48 @@ mytextclock = wibox.widget.textclock()
 local month_calendar = awful.widget.calendar_popup.month()
 month_calendar:attach( mytextclock, "tr" )
 
-local search_text = wibox.widget.textbox()
-search_text.text = 'Search'
-local search_box = wibox.widget {
-    {
-        {
-            {
-                -- TODO add iconbox here
-                search_text,
-                layout = wibox.layout.fixed.horizontal,
-            },
-            left = 3,
-            right = 3,
-            widget = wibox.container.margin,
-        },
-        bg = beautiful.border_focus,
-        fg = beautiful.fg_focus,
-        widget = wibox.container.background,
-    },
-    layout = wibox.layout.fixed.horizontal,
-}
--- Lets me left click to pull up rofi
-search_box:buttons(awful.util.table.join(awful.button({}, 1, function () awful.spawn('rofi -combi-modi window,drun,run -show combi -modi combi') end)))
+local search_box = require("search_box")
 
 -- Create a wibox for each screen and add it
-local taglist_buttons = gears.table.join(
-                    awful.button({ }, 1, function(t) t:view_only() end),
-                    awful.button({ modkey }, 1, function(t)
-                                              if client.focus then
-                                                  client.focus:move_to_tag(t)
-                                              end
-                                          end),
-                    awful.button({ }, 3, awful.tag.viewtoggle),
-                    awful.button({ modkey }, 3, function(t)
-                                              if client.focus then
-                                                  client.focus:toggle_tag(t)
-                                              end
-                                          end),
-                    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
-                    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
-                )
+local taglist_buttons = {
+    awful.button({ }, 1, function(t) t:view_only() end),
+    awful.button({ modkey }, 1, function(t)
+        if client.focus then
+            client.focus:move_to_tag(t)
+        end
+    end),
+    awful.button({ }, 3, awful.tag.viewtoggle),
+    awful.button({ modkey }, 3, function(t)
+        if client.focus then
+            client.focus:toggle_tag(t)
+        end
+    end),
+    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
+    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end),
+}
 
-local tasklist_buttons = gears.table.join(
-                     awful.button({ }, 1, function (c)
-                                              if c == client.focus then
-                                                  c.minimized = true
-                                              else
-                                                  c:emit_signal(
-                                                      "request::activate",
-                                                      "tasklist",
-                                                      {raise = true}
-                                                  )
-                                              end
-                                          end),
-                     awful.button({ }, 3, function()
-                                              awful.menu.client_list({ theme = { width = 250 } })
-                                          end),
-                     awful.button({ }, 4, function ()
-                                              awful.client.focus.byidx(1)
-                                          end),
-                     awful.button({ }, 5, function ()
-                                              awful.client.focus.byidx(-1)
-                                          end))
+local tasklist_buttons = {
+    awful.button({ }, 1, function (c)
+        if c == client.focus then
+            c.minimized = true
+        else
+            c:emit_signal(
+            "request::activate",
+            "tasklist",
+            {raise = true}
+            )
+        end
+    end),
+    awful.button({ }, 3, function()
+        awful.menu.client_list({ theme = { width = 250 } })
+    end),
+    awful.button({ }, 4, function ()
+        awful.client.focus.byidx(1)
+    end),
+    awful.button({ }, 5, function ()
+        awful.client.focus.byidx(-1)
+    end),
+}
 
 screen.connect_signal("request::wallpaper", function(s)
     -- Wallpaper
@@ -234,7 +214,15 @@ screen.connect_signal("request::desktop_decoration", function(s)
     s.mypromptbox = awful.widget.prompt()
     -- Create an imagebox widget which will contain an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
-    s.mylayoutbox = awful.widget.layoutbox(s)
+    s.mylayoutbox = awful.widget.layoutbox {
+        screen = s,
+        buttons = {
+                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
+                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
+                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
+                           awful.button({ }, 5, function () awful.layout.inc(-1) end),
+        }
+    }
     
     -- Add a fancy popup when we change layouts
     -- Taken from: https://github.com/raphaelfournier/Dotfiles/blob/master/awesome/.config/awesome/rc.lua
@@ -280,78 +268,73 @@ screen.connect_signal("request::desktop_decoration", function(s)
     }
     layoutpopup:bind_to_widget(s.mylayoutbox)
 
-    s.mylayoutbox:buttons(gears.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
-                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
 
     -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist {
-        screen  = s,
-        filter  = awful.widget.tasklist.filter.currenttags,
-        buttons = tasklist_buttons,
-        style    = {
-            shape_border_width = 1,
-            shape_border_color = '#777777',
-            shape  = gears.shape.rectangle,
-        },
-        layout   = {
-            spacing = 10,
-            spacing_widget = {
-                {
-                    forced_width = 5,
-                    --shape        = gears.shape.circle,
-                    widget       = wibox.widget.separator
-                },
-                valign = 'center',
-                halign = 'center',
-                widget = wibox.container.place,
-            },
-        layout  = wibox.layout.fixed.horizontal -- only use what it needed
-        },
-        -- Notice that there is *NO* wibox.wibox prefix, it is a template,
-        -- not a widget instance.
-        widget_template = {
-            {
-                {
-                    {
-                        {
-                            id     = 'icon_role',
-                            widget = wibox.widget.imagebox,
-                        },
-                        margins = 2,
-                        widget  = wibox.container.margin,
-                    },
-                    {
-                        {
-                            id = 'text_role',
-                            widget = wibox.widget.textbox,
-                        },
-                        -- TODO play with this value
-                        width = 65,
-                        widget = wibox.container.constraint,
-                    },
-                    layout = wibox.layout.fixed.horizontal,
-                },
-                left  = 10,
-                right = 20,
-                widget = wibox.container.margin
-            },
-            -- Set background from theme
-            bg = beautiful.tasklist_bg or "#ffffff",
-            widget = wibox.container.background,
-            -- Adds tooltips to each object
-            create_callback = function(self, c, index, objects)
-            local tooltip = awful.tooltip({
-                objects = { self },
-                timer_function = function()
-                    return c.name
-                end,
-            })
-            end,
-        }
-    }
+    --s.mytasklist = awful.widget.tasklist {
+    --    screen  = s,
+    --    filter  = awful.widget.tasklist.filter.currenttags,
+    --    buttons = tasklist_buttons,
+    --    style    = {
+    --        shape_border_width = 1,
+    --        shape_border_color = '#777777',
+    --        shape  = gears.shape.rectangle,
+    --    },
+    --    layout   = {
+    --        spacing = 10,
+    --        spacing_widget = {
+    --            {
+    --                forced_width = 5,
+    --                --shape        = gears.shape.circle,
+    --                widget       = wibox.widget.separator
+    --            },
+    --            valign = 'center',
+    --            halign = 'center',
+    --            widget = wibox.container.place,
+    --        },
+    --    layout  = wibox.layout.fixed.horizontal -- only use what it needed
+    --    },
+    --    -- Notice that there is *NO* wibox.wibox prefix, it is a template,
+    --    -- not a widget instance.
+    --    widget_template = {
+    --        {
+    --            {
+    --                {
+    --                    {
+    --                        id     = 'icon_role',
+    --                        widget = wibox.widget.imagebox,
+    --                    },
+    --                    margins = 2,
+    --                    widget  = wibox.container.margin,
+    --                },
+    --                {
+    --                    {
+    --                        id = 'text_role',
+    --                        widget = wibox.widget.textbox,
+    --                    },
+    --                    -- TODO play with this value
+    --                    width = 65,
+    --                    widget = wibox.container.constraint,
+    --                },
+    --                layout = wibox.layout.fixed.horizontal,
+    --            },
+    --            left  = 10,
+    --            right = 20,
+    --            widget = wibox.container.margin
+    --        },
+    --        -- Set background from theme
+    --        bg = beautiful.tasklist_bg or "#ffffff",
+    --        widget = wibox.container.background,
+    --        -- Adds tooltips to each object
+    --        create_callback = function(self, c, index, objects)
+    --        local tooltip = awful.tooltip({
+    --            objects = { self },
+    --            timer_function = function()
+    --                return c.name
+    --            end,
+    --        })
+    --        end,
+    --    }
+    --}
 
     -- Create the wibars
     s.mywibox = awful.wibar({ 
@@ -362,15 +345,15 @@ screen.connect_signal("request::desktop_decoration", function(s)
         type = 'dock' 
     })
 
-    s.bottombox = awful.wibar({ 
-        position = "top", 
-        screen = s, 
-        bg = "tranparent", 
-        type = 'dock' 
-    })
+    --s.bottombox = awful.wibar({ 
+    --    position = "top", 
+    --    screen = s, 
+    --    bg = "tranparent", 
+    --    type = 'dock' 
+    --})
 
     -- Add widgets to the wibox
-    s.mywibox:setup {
+    s.mywibox.widget = {
         -- Taken from https://www.reddit.com/r/unixporn/comments/c5sc6b/awesome_nebula_blaze
         layout = wibox.layout.manual,
         { -- Left widget space setup
@@ -439,25 +422,25 @@ screen.connect_signal("request::desktop_decoration", function(s)
         },
     }
 
-    s.bottombox:setup {
-        layout = wibox.layout.align.horizontal,
-        search_box,
-        s.mytasklist,
-        {
-            wibox.widget.systray(),
-            halign = "right",
-            widget = wibox.container.place
-        }
-    }
+    --s.bottombox:setup {
+    --    layout = wibox.layout.align.horizontal,
+    --    --search_box,
+    --    s.mytasklist,
+    --    {
+    --        wibox.widget.systray(),
+    --        halign = "right",
+    --        widget = wibox.container.place
+    --    }
+    --}
 end)
 -- }}}
 
 -- {{{ Mouse bindings
-root.buttons(gears.table.join(
+root.buttons = {
     awful.button({ }, 3, function () mymainmenu:toggle() end),
     awful.button({ }, 4, awful.tag.viewnext),
-    awful.button({ }, 5, awful.tag.viewprev)
-))
+    awful.button({ }, 5, awful.tag.viewprev),
+}
 -- }}}
 
 -- {{{ Key bindings
@@ -569,7 +552,7 @@ globalkeys = gears.table.join(
               {description = "Change wal theme", group="media"})
 )
 
-clientkeys = gears.table.join(
+clientkeys = {
     awful.key({ modkey,           }, "f",
         function (c)
             c.fullscreen = not c.fullscreen
@@ -610,8 +593,8 @@ clientkeys = gears.table.join(
             c.maximized_horizontal = not c.maximized_horizontal
             c:raise()
         end ,
-        {description = "(un)maximize horizontally", group = "client"})
-)
+        {description = "(un)maximize horizontally", group = "client"}),
+}
 
 -- Add media keys into the keys
 mediakeys = gears.table.join (
@@ -697,7 +680,7 @@ for i = 1, 9 do
     )
 end
 
-clientbuttons = gears.table.join(
+clientbuttons = {
     awful.button({ }, 1, function (c)
         if c.name ~= "CellWriter" and c.name ~= "Onboard" then
             c:emit_signal("request::activate", "mouse_click", {raise = true})
@@ -710,9 +693,8 @@ clientbuttons = gears.table.join(
     awful.button({ modkey }, 3, function (c)
         c:emit_signal("request::activate", "mouse_click", {raise = true})
         awful.mouse.client.resize(c)
-    end)
-)
-
+    end),
+}
 -- Set keys
 root.keys(globalkeys)
 -- }}}
@@ -811,7 +793,7 @@ end)
 -- Add a titlebar if titlebars_enabled is set to true in the rules.
 client.connect_signal("request::titlebars", function(c)
     -- buttons for the titlebar
-    local buttons = gears.table.join(
+    local buttons = {
         awful.button({ }, 1, function()
             c:emit_signal("request::activate", "titlebar", {raise = true})
             awful.mouse.client.move(c)
@@ -819,10 +801,10 @@ client.connect_signal("request::titlebars", function(c)
         awful.button({ }, 3, function()
             c:emit_signal("request::activate", "titlebar", {raise = true})
             awful.mouse.client.resize(c)
-        end)
-    )
+        end),
+    }
 
-    awful.titlebar(c) : setup {
+    awful.titlebar(c).widget = {
         { -- Left
             awful.titlebar.widget.iconwidget(c),
             buttons = buttons,
