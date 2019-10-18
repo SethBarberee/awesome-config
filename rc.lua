@@ -444,7 +444,7 @@ root.buttons = {
 -- }}}
 
 -- {{{ Key bindings
-globalkeys = gears.table.join(
+globalkeys = {
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
@@ -480,14 +480,14 @@ globalkeys = gears.table.join(
               {description = "focus the previous screen", group = "screen"}),
     awful.key({ modkey,           }, "u", awful.client.urgent.jumpto,
               {description = "jump to urgent client", group = "client"}),
-    awful.key({ modkey,           }, "Tab",
-        function ()
-            awful.client.focus.history.previous()
-            if client.focus then
-                client.focus:raise()
-            end
-        end,
-        {description = "go back", group = "client"}),
+    --awful.key({ modkey,           }, "Tab",
+    --    function ()
+    --        awful.client.focus.history.previous()
+    --        if client.focus then
+    --            client.focus:raise()
+    --        end
+    --    end,
+    --    {description = "go back", group = "client"}),
 
     -- Standard program
     awful.key({ modkey,           }, "Return", function () awful.spawn(terminal) end,
@@ -550,7 +550,7 @@ globalkeys = gears.table.join(
               {description = "Lock PC", group="media"}),
     awful.key({ modkey }, "t", function() awful.spawn.with_shell("rofi -modi 'theme:~/.config/rofi/rofi-wal-theme-switcher.sh' -show theme") end,
               {description = "Change wal theme", group="media"})
-)
+}
 
 clientkeys = {
     awful.key({ modkey,           }, "f",
@@ -597,7 +597,7 @@ clientkeys = {
 }
 
 -- Add media keys into the keys
-mediakeys = gears.table.join (
+mediakeys = {
     awful.key({}, "XF86AudioPlay", function() awful.spawn.with_shell("playerctl play-pause") end,
 		      {description = "Toggle Music Player", group="media"}),
 	awful.key({}, "XF86AudioPrev", function() awful.spawn.with_shell("playerctl previous") end,
@@ -619,12 +619,12 @@ mediakeys = gears.table.join (
         awful.key({}, "XF86MonBrightnessDown", function() 
             awful.spawn.with_shell("xbacklight -dec 5")
         end,
-		      {description = "Decrease Brightness", group="monitor"})
-)
+		      {description = "Decrease Brightness", group="monitor"}),
+}
 
-pluginkeys = gears.table.join(
-    awful.key({ modkey,           }, "e",      revelation)
-)
+pluginkeys = {
+    awful.key({ modkey,           }, "e",      revelation),
+}
 
 globalkeys = gears.table.join(globalkeys, pluginkeys)
 globalkeys  = gears.table.join(globalkeys, mediakeys)
@@ -634,9 +634,8 @@ globalkeys  = gears.table.join(globalkeys, mediakeys)
 -- Be careful: we use keycodes to make it work on any keyboard layout.
 -- This should map on the top row of your keyboard, usually 1 to 9.
 for i = 1, 9 do
-    globalkeys = gears.table.join(globalkeys,
         -- View tag only.
-        awful.key({ modkey }, "#" .. i + 9,
+        table.insert(globalkeys, awful.key({ modkey }, "#" .. i + 9,
                   function ()
                         local screen = awful.screen.focused()
                         local tag = screen.tags[i]
@@ -644,9 +643,10 @@ for i = 1, 9 do
                            tag:view_only()
                         end
                   end,
-                  {description = "view tag #"..i, group = "tag"}),
+                  {description = "view tag #"..i, group = "tag"})
+        )
         -- Toggle tag display.
-        awful.key({ modkey, "Control" }, "#" .. i + 9,
+        table.insert(globalkeys, awful.key({ modkey, "Control" }, "#" .. i + 9,
                   function ()
                       local screen = awful.screen.focused()
                       local tag = screen.tags[i]
@@ -654,9 +654,10 @@ for i = 1, 9 do
                          awful.tag.viewtoggle(tag)
                       end
                   end,
-                  {description = "toggle tag #" .. i, group = "tag"}),
+                  {description = "toggle tag #" .. i, group = "tag"})
+        )
         -- Move client to tag.
-        awful.key({ modkey, "Shift" }, "#" .. i + 9,
+        table.insert(globalkeys, awful.key({ modkey, "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
                           local tag = client.focus.screen.tags[i]
@@ -665,9 +666,10 @@ for i = 1, 9 do
                           end
                      end
                   end,
-                  {description = "move focused client to tag #"..i, group = "tag"}),
+                  {description = "move focused client to tag #"..i, group = "tag"})
+        )
         -- Toggle tag on focused client.
-        awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
+        table.insert(globalkeys, awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
                           local tag = client.focus.screen.tags[i]
@@ -677,7 +679,7 @@ for i = 1, 9 do
                       end
                   end,
                   {description = "toggle focused client on tag #" .. i, group = "tag"})
-    )
+        )
 end
 
 clientbuttons = {
@@ -841,6 +843,7 @@ client.connect_signal("focus", function(c) c.border_color = beautiful.border_foc
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 
 dofile("/home/seth/.config/awesome/tag_notify.lua")
+dofile("/home/seth/.config/awesome/tabber.lua")
 
 -- Spawn all the programs needed at startup
 for _,v in pairs(autostart) do
