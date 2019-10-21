@@ -155,6 +155,7 @@ theme.awesome_icon = theme_assets.awesome_icon(
 -- from /usr/share/icons and /usr/share/icons/hicolor will be used.
 theme.icon_theme = nil
 
+--- {{{ Search box widget
 local search_text = wibox.widget.textbox()
 search_text.text = 'Search'
 local search_box = wibox.widget {
@@ -177,8 +178,8 @@ local search_box = wibox.widget {
 }
 -- Lets me left click to pull up rofi
 search_box:buttons(awful.util.table.join(awful.button({}, 1, function () awful.spawn('rofi -combi-modi window,drun,run -show combi -modi combi') end)))
-
-
+--- }}}
+---{{{ Tasklist buttons 
 local tasklist_buttons = {
     awful.button({ }, 1, function (c)
         if c == client.focus then
@@ -201,91 +202,89 @@ local tasklist_buttons = {
         awful.client.focus.byidx(-1)
     end)
 }
+--- }}} 
+--- {{{ Widget bar setup
+screen.connect_signal("request::desktop_decoration", function(s)
+    local notif_wb = awful.wibar {
+        position = 'bottom',
+        height   = 48,
+        type = 'dock',
+        bg = 'transparent',
+        screen = s,
+        --visible  = client.instances() > 0, -- TODO maybe make it appear when we have clients
+    }
 
-
--- {{{ Tasklist wibar
-local mytasklist = awful.widget.tasklist {
-    screen   = awful.screen.focused(),
-    filter   = awful.widget.tasklist.filter.currenttags,
-    buttons  = tasklist_buttons,
-    layout   = {
-        spacing_widget = {
-            {
-                forced_width  = 5,
-                forced_height = 24,
-                thickness     = 1,
-                color         = '#777777',
-                widget        = wibox.widget.separator
+    -- {{{ Tasklist wibar
+    local mytasklist = awful.widget.tasklist {
+        screen   = s,
+        filter   = awful.widget.tasklist.filter.currenttags,
+        buttons  = tasklist_buttons,
+        layout   = {
+            spacing_widget = {
+                {
+                    forced_width  = 5,
+                    forced_height = 24,
+                    thickness     = 1,
+                    color         = '#777777',
+                    widget        = wibox.widget.separator
+                },
+                valign = 'center',
+                halign = 'center',
+                widget = wibox.container.place,
             },
-            valign = 'center',
-            halign = 'center',
-            widget = wibox.container.place,
+            spacing = 1,
+            layout  = wibox.layout.fixed.horizontal
         },
-        spacing = 1,
-        layout  = wibox.layout.fixed.horizontal
-    },
-    -- Notice that there is *NO* wibox.wibox prefix, it is a template,
-    -- not a widget instance.
-    widget_template = {
-        {
-            wibox.widget.base.make_widget(),
-            forced_height = 5,
-            id            = 'background_role',
-            widget        = wibox.container.background,
-        },
-        {
-            awful.widget.clienticon,
-            margins = 5,
-            widget  = wibox.container.margin
-        },
-        nil,
-        layout = wibox.layout.align.vertical,
-        -- TODO is there a click callback???
-        create_callback = function(self, c, index, objects) local tooltip = awful.tooltip({
-            objects = { self },
-            timer_function = function()
-                return c.name
+        -- Notice that there is *NO* wibox.wibox prefix, it is a template,
+        -- not a widget instance.
+        widget_template = {
+            {
+                wibox.widget.base.make_widget(),
+                forced_height = 5,
+                id            = 'background_role',
+                widget        = wibox.container.background,
+            },
+            {
+                awful.widget.clienticon,
+                margins = 5,
+                widget  = wibox.container.margin
+            },
+            nil,
+            layout = wibox.layout.align.vertical,
+            -- TODO is there a click callback???
+            create_callback = function(self, c, index, objects) local tooltip = awful.tooltip({
+                objects = { self },
+                timer_function = function()
+                    return c.name
+                end,
+            })
             end,
-        })
-        end,
-    },
-}
-
-local notif_wb = awful.wibar {
-    position = 'bottom',
-    height   = 48,
-    type = 'dock',
-    bg = 'transparent',
-    --visible  = client.instances() > 0, -- TODO maybe make it appear when we have clients
-}
-
-local left_layout = wibox.layout.fixed.horizontal()
-left_layout:add(search_box)
-
-local layout = wibox.widget {
-    {
-        left_layout,
-        {
-            mytasklist,
-            content_fill_horizontal = true,
-            widget = wibox.container.place,
         },
-        wibox.widget.systray(),
-        layout = wibox.layout.align.horizontal,
-    },
-    top = theme.border_width,
-    color = theme.border_focus,
-    widget = wibox.container.margin,
-}
-notif_wb:set_widget(layout)
---notif_wb:setup {
---    left_layout,
---    mytasklist,
---    wibox.widget.systray(),
---    layout = wibox.layout.align.horizontal
---}
+    }
 
+    --- {{{ Wibar setup
+    local left_layout = wibox.layout.fixed.horizontal()
+    left_layout:add(search_box)
 
+    local layout = wibox.widget {
+        {
+            left_layout,
+            {
+                mytasklist,
+                content_fill_horizontal = true,
+                widget = wibox.container.place,
+            },
+            wibox.widget.systray(),
+            layout = wibox.layout.align.horizontal,
+        },
+        top = theme.border_width,
+        color = theme.border_focus,
+        widget = wibox.container.margin,
+    }
+    notif_wb:set_widget(layout)
+    --- }}}
+end)
+--- }}}
 
 -- TODO migrate to only show when we have clients
 --client.connect_signal("manage", function()
