@@ -142,8 +142,6 @@ mytextclock = wibox.widget.textclock()
 local month_calendar = awful.widget.calendar_popup.month()
 month_calendar:attach( mytextclock, "tr" )
 
-local search_box = require("search_box")
-
 -- Create a wibox for each screen and add it
 local taglist_buttons = {
     awful.button({ }, 1, function(t) t:view_only() end),
@@ -230,7 +228,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
         widget = wibox.widget {
             awful.widget.layoutlist {
                 source      = awful.widget.layoutlist.source.default_layouts,
-                screen      = 1,
+                screen      = s,
                 base_layout = wibox.widget {
                     spacing         = 5,
                     forced_num_cols = 2,
@@ -268,74 +266,6 @@ screen.connect_signal("request::desktop_decoration", function(s)
     }
     layoutpopup:bind_to_widget(s.mylayoutbox)
 
-
-    -- Create a tasklist widget
-    --s.mytasklist = awful.widget.tasklist {
-    --    screen  = s,
-    --    filter  = awful.widget.tasklist.filter.currenttags,
-    --    buttons = tasklist_buttons,
-    --    style    = {
-    --        shape_border_width = 1,
-    --        shape_border_color = '#777777',
-    --        shape  = gears.shape.rectangle,
-    --    },
-    --    layout   = {
-    --        spacing = 10,
-    --        spacing_widget = {
-    --            {
-    --                forced_width = 5,
-    --                --shape        = gears.shape.circle,
-    --                widget       = wibox.widget.separator
-    --            },
-    --            valign = 'center',
-    --            halign = 'center',
-    --            widget = wibox.container.place,
-    --        },
-    --    layout  = wibox.layout.fixed.horizontal -- only use what it needed
-    --    },
-    --    -- Notice that there is *NO* wibox.wibox prefix, it is a template,
-    --    -- not a widget instance.
-    --    widget_template = {
-    --        {
-    --            {
-    --                {
-    --                    {
-    --                        id     = 'icon_role',
-    --                        widget = wibox.widget.imagebox,
-    --                    },
-    --                    margins = 2,
-    --                    widget  = wibox.container.margin,
-    --                },
-    --                {
-    --                    {
-    --                        id = 'text_role',
-    --                        widget = wibox.widget.textbox,
-    --                    },
-    --                    -- TODO play with this value
-    --                    width = 65,
-    --                    widget = wibox.container.constraint,
-    --                },
-    --                layout = wibox.layout.fixed.horizontal,
-    --            },
-    --            left  = 10,
-    --            right = 20,
-    --            widget = wibox.container.margin
-    --        },
-    --        -- Set background from theme
-    --        bg = beautiful.tasklist_bg or "#ffffff",
-    --        widget = wibox.container.background,
-    --        -- Adds tooltips to each object
-    --        create_callback = function(self, c, index, objects)
-    --        local tooltip = awful.tooltip({
-    --            objects = { self },
-    --            timer_function = function()
-    --                return c.name
-    --            end,
-    --        })
-    --        end,
-    --    }
-    --}
-
     -- Create the wibars
     s.mywibox = awful.wibar({ 
         position = "top", 
@@ -344,14 +274,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
         fg = beautiful.wibar_fg or "#ffffff",
         type = 'dock' 
     })
-
-    --s.bottombox = awful.wibar({ 
-    --    position = "top", 
-    --    screen = s, 
-    --    bg = "tranparent", 
-    --    type = 'dock' 
-    --})
-
+    --- {{{ Top wibar layout/setup
     -- Add widgets to the wibox
     s.mywibox.widget = {
         -- Taken from https://www.reddit.com/r/unixporn/comments/c5sc6b/awesome_nebula_blaze
@@ -421,17 +344,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
             },
         },
     }
-
-    --s.bottombox:setup {
-    --    layout = wibox.layout.align.horizontal,
-    --    --search_box,
-    --    s.mytasklist,
-    --    {
-    --        wibox.widget.systray(),
-    --        halign = "right",
-    --        widget = wibox.container.place
-    --    }
-    --}
+    --- }}}
 end)
 -- }}}
 

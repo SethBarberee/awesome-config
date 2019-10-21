@@ -217,9 +217,9 @@ notif_wb:setup {
             valign = 'center',
             widget = wibox.widget.textbox
         },
-        buttons = gears.table.join(
+        buttons = {
             awful.button({ }, 1, function() naughty.destroy_all_notifications() end)
-        ),
+        },
         forced_width       = 75,
         shape              = gears.shape.rounded_bar,
         shape_border_width = 1,
