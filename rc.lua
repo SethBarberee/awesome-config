@@ -842,8 +842,8 @@ end)
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 
-dofile("/home/seth/.config/awesome/tag_notify.lua")
-dofile("/home/seth/.config/awesome/tabber.lua")
+dofile(gears.filesystem.get_configuration_dir() .. "tag_notify.lua")
+dofile(gears.filesystem.get_configuration_dir() .. "tabber.lua")
 
 -- Spawn all the programs needed at startup
 for _,v in pairs(autostart) do
