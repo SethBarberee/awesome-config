@@ -7,18 +7,14 @@ local beautiful = require("beautiful")
 local volume = wibox.widget {
     {
         id = 'bar',
-        max_value     = 100,
+        maximum       = 100,
         value         = 50,
         forced_height = 20,
         forced_width  = 100,
-        paddings      = 1,
-        border_width  = 1,
-        shape = gears.shape.rounded_bar,
-        bar_shape = gears.shape.rounded_bar,
-        border_color  = beautiful.border_color,
-        color         = beautiful.bg_focus,
-        background_color = beautiful.bg_normal,
-        widget        = wibox.widget.progressbar,
+        bar_height = 3,
+        bar_active_color         = beautiful.bg_focus,
+        bar_color      = beautiful.bg_normal,
+        widget        = wibox.widget.slider,
     },
     {
         id = 'textbox',
@@ -33,34 +29,51 @@ local volume = wibox.widget {
 local muted = false -- Keep track of mute
 
 local function update_volume()
-    awful.spawn.easy_async_with_shell("ponymix get-volume", function(stdout)
-        -- TODO text concatenation
-        volume.textbox.text = stdout
-        volume.bar:set_value(tonumber(stdout))
+    awful.spawn.easy_async_with_shell("pamixer --get-mute", function(stdout)
+        if string.match(stdout, 'false') then
+            awful.spawn.easy_async_with_shell("pamixer --get-volume", function(stdout)
+                -- TODO text concatenation
+                volume.textbox.text = stdout
+                --volume.bar:set_value(tonumber(stdout))
+                volume.bar.value = tonumber(stdout)
+            end)
+            muted = false
+        else 
+            muted = true
+            volume.textbox.text = "Muted"
+            volume.bar.value = 0
+        end
     end)
 end
 
 function volume.raise_volume()
-    awful.spawn.with_shell("ponymix increase 10")
+    awful.spawn.with_shell("pamixer --increase 10")
     update_volume()
 end
 
 function volume.lower_volume()
-    awful.spawn.with_shell("ponymix decrease 10") 
+    awful.spawn.with_shell("pamixer --decrease 10") 
     update_volume()
 end
 
 function volume.mute()
-    awful.spawn.with_shell("ponymix toggle")
+    awful.spawn.with_shell("pamixer --toggle-mute")
     if muted then
         muted = false
         update_volume()
     else 
         muted = true
         volume.textbox.text = "Muted"
-        volume.bar:set_value(tonumber(stdout))
+        --volume.bar:set_value(tonumber(stdout))
+        volume.bar.value = 0
     end
 end
+
+volume.bar:connect_signal('property::value', function()
+    awful.spawn.easy_async_with_shell("pamixer --set-volume " .. volume.bar.value, function()
+        update_volume()
+    end)
+end)
 
 update_volume()
 
