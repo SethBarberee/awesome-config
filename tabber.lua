@@ -5,7 +5,7 @@ local beautiful = require("beautiful")
 
 local client_popup = awful.popup {
     widget = awful.widget.tasklist {
-        screen   = awful.screen.focused(),
+        screen   = mouse.screen, -- TODO see if this change is better
         filter   = awful.widget.tasklist.filter.currenttags,
         buttons  = tasklist_buttons,
         style    = {
@@ -43,15 +43,17 @@ local client_popup = awful.popup {
 }
 
 local function start_key()
-    -- TODO only show when we have more than 1 client
-    awful.client.focus.history.disable_tracking()
-    client_popup.visible = true
+    if #mouse.screen.clients > 1 then -- only do this for when we have more than 1 client
+        awful.client.focus.history.disable_tracking()
+        client_popup.visible = true
+    end
 end
 
 local function stop_key()
-    -- TODO only show when we have more than 1 client
-    awful.client.focus.history.enable_tracking()
-    client_popup.visible = false
+    if #mouse.screen.clients > 1 then -- only do this when we have more than 1 client
+        awful.client.focus.history.enable_tracking()
+        client_popup.visible = false
+    end
 end
 
 awful.keygrabber {
@@ -61,14 +63,18 @@ awful.keygrabber {
                 key = 'Tab', 
                 on_press = function() 
                     awful.client.focus.byidx(1)
-                end
+                end,
+                description = "Forward focus w/ tabber",
+                group = "client"
             },
             awful.key {
                 modifiers = {'Mod4', 'Shift'}, 
                 key = 'Tab', 
                 on_press = function() 
                     awful.client.focus.byidx(-1)
-                end
+                end,
+                description = "Reverse focus w/ tabber",
+                group = "client"
             }
         },
     -- Note that it is using the key name and not the modifier name.
