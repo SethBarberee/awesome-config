@@ -55,10 +55,22 @@ local function stop_key()
 end
 
 awful.keygrabber {
-    keybindings = {
-        {{'Mod4'         }, 'Tab', function() awful.client.focus.byidx(1)end},
-        {{'Mod4', 'Shift'}, 'Tab', function() awful.client.focus.byidx(-1)end},
-    },
+        keybindings = {
+            awful.key {
+                modifiers = {'Mod4'}, 
+                key = 'Tab', 
+                on_press = function() 
+                    awful.client.focus.byidx(1)
+                end
+            },
+            awful.key {
+                modifiers = {'Mod4', 'Shift'}, 
+                key = 'Tab', 
+                on_press = function() 
+                    awful.client.focus.byidx(-1)
+                end
+            }
+        },
     -- Note that it is using the key name and not the modifier name.
     stop_key           = 'Mod4',
     stop_event         = 'release',

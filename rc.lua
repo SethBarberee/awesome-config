@@ -120,6 +120,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 
 -- {{{ Widgets/Wibar
 local volume = require("volume-widget") -- custom volume widget
+local brightness = require("brightness-widget") -- custom volume widget
 
 -- Create battery widget
 -- TODO Add icon
@@ -141,24 +142,6 @@ local bat = battery (
 mytextclock = wibox.widget.textclock()
 local month_calendar = awful.widget.calendar_popup.month()
 month_calendar:attach( mytextclock, "tr" )
-
--- Create a wibox for each screen and add it
-local taglist_buttons = {
-    awful.button({ }, 1, function(t) t:view_only() end),
-    awful.button({ modkey }, 1, function(t)
-        if client.focus then
-            client.focus:move_to_tag(t)
-        end
-    end),
-    awful.button({ }, 3, awful.tag.viewtoggle),
-    awful.button({ modkey }, 3, function(t)
-        if client.focus then
-            client.focus:toggle_tag(t)
-        end
-    end),
-    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
-    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end),
-}
 
 local tasklist_buttons = {
     awful.button({ }, 1, function (c)
@@ -195,13 +178,38 @@ screen.connect_signal("request::wallpaper", function(s)
     end
 end)
 
+screen_table = {} -- table of all my monitors
 
 screen.connect_signal("request::desktop_decoration", function(s)
+
+    -- Set up the table for each monitor
+    local index = s.index
+    screen_table[index] = {}
+    local si = screen_table[index]
+
     -- Each screen has its own tag table.
     awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[2])
 
+    -- Create a wibox for each screen and add it
+    local taglist_buttons = {
+        awful.button({ }, 1, function(t) t:view_only() end),
+        awful.button({ modkey }, 1, function(t)
+            if client.focus then
+                client.focus:move_to_tag(t)
+            end
+        end),
+        awful.button({ }, 3, awful.tag.viewtoggle),
+        awful.button({ modkey }, 3, function(t)
+            if client.focus then
+                client.focus:toggle_tag(t)
+            end
+        end),
+        awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
+        awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end),
+    }
+
     -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist {
+    si.taglist = awful.widget.taglist {
         screen  = s,
         filter  = awful.widget.taglist.filter.all,
         buttons = taglist_buttons
@@ -209,10 +217,10 @@ screen.connect_signal("request::desktop_decoration", function(s)
 
 
     -- Create a promptbox for each screen
-    s.mypromptbox = awful.widget.prompt()
+    si.mypromptbox = awful.widget.prompt()
     -- Create an imagebox widget which will contain an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
-    s.mylayoutbox = awful.widget.layoutbox {
+    si.mylayoutbox = awful.widget.layoutbox {
         screen = s,
         buttons = {
                            awful.button({ }, 1, function () awful.layout.inc( 1) end),
@@ -264,10 +272,10 @@ screen.connect_signal("request::desktop_decoration", function(s)
         visible = false,
         ontop = true,
     }
-    layoutpopup:bind_to_widget(s.mylayoutbox)
+    layoutpopup:bind_to_widget(si.mylayoutbox)
 
     -- Create the wibars
-    s.mywibox = awful.wibar({ 
+    si.mywibox = awful.wibar({ 
         position = "top", 
         screen = s, 
         bg = "transparent", 
@@ -276,7 +284,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
     })
     --- {{{ Top wibar layout/setup
     -- Add widgets to the wibox
-    s.mywibox.widget = {
+    si.mywibox.widget = {
         -- Taken from https://www.reddit.com/r/unixporn/comments/c5sc6b/awesome_nebula_blaze
         layout = wibox.layout.manual,
         { -- Left widget space setup
@@ -295,9 +303,9 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     {
                         layout = wibox.layout.fixed.horizontal,
                         mylauncher,
-                        s.mytaglist,
+                        si.taglist,
                         tagadder,
-                        s.mypromptbox,
+                        si.mypromptbox,
                     }
                 }
             },
@@ -336,9 +344,10 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     halign = "right",
                     {
                         layout = wibox.layout.fixed.horizontal,
+                        brightness,
                         volume,
                         bat.widget,
-                        s.mylayoutbox,
+                        si.mylayoutbox,
                     }
                 },
             },
@@ -349,15 +358,15 @@ end)
 -- }}}
 
 -- {{{ Mouse bindings
-root.buttons = {
+awful.mouse.append_global_mousebindings ({
     awful.button({ }, 3, function () mymainmenu:toggle() end),
     awful.button({ }, 4, awful.tag.viewnext),
     awful.button({ }, 5, awful.tag.viewprev),
-}
+})
 -- }}}
 
 -- {{{ Key bindings
-globalkeys = {
+awful.keyboard.append_global_keybindings({
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
@@ -463,7 +472,7 @@ globalkeys = {
               {description = "Lock PC", group="media"}),
     awful.key({ modkey }, "t", function() awful.spawn.with_shell("rofi -modi 'theme:~/.config/rofi/rofi-wal-theme-switcher.sh' -show theme") end,
               {description = "Change wal theme", group="media"})
-}
+})
 
 clientkeys = {
     awful.key({ modkey,           }, "f",
@@ -510,7 +519,7 @@ clientkeys = {
 }
 
 -- Add media keys into the keys
-mediakeys = {
+awful.keyboard.append_global_keybindings({
     awful.key({}, "XF86AudioPlay", function() awful.spawn.with_shell("playerctl play-pause") end,
 		      {description = "Toggle Music Player", group="media"}),
 	awful.key({}, "XF86AudioPrev", function() awful.spawn.with_shell("playerctl previous") end,
@@ -525,22 +534,16 @@ mediakeys = {
               {description = "Increase Volume", group="media"}),
         awful.key({}, "XF86AudioLowerVolume", function() volume.lower_volume() end,
 		      {description = "Decrease Volume", group="media"}),
-        awful.key({}, "XF86MonBrightnessUp", function() 
-            awful.spawn.with_shell("xbacklight -inc 5")
-        end,
+        awful.key({}, "XF86MonBrightnessUp", function() brightness.raise_brightness() end,
 		      {description = "Increase Brightness", group="monitor"}),
-        awful.key({}, "XF86MonBrightnessDown", function() 
-            awful.spawn.with_shell("xbacklight -dec 5")
-        end,
+        awful.key({}, "XF86MonBrightnessDown", function() brightness.lower_brightness() end,
 		      {description = "Decrease Brightness", group="monitor"}),
-}
+})
 
-pluginkeys = {
-    awful.key({ modkey,           }, "e",      revelation),
-}
-
-globalkeys = gears.table.join(globalkeys, pluginkeys)
-globalkeys  = gears.table.join(globalkeys, mediakeys)
+-- Plugin
+awful.keyboard.append_global_keybinding(
+    awful.key({ modkey,           }, "e",      revelation)
+)
 
 
 -- Bind all key numbers to tags.
@@ -548,7 +551,8 @@ globalkeys  = gears.table.join(globalkeys, mediakeys)
 -- This should map on the top row of your keyboard, usually 1 to 9.
 for i = 1, 9 do
         -- View tag only.
-        table.insert(globalkeys, awful.key({ modkey }, "#" .. i + 9,
+        awful.keyboard.append_global_keybinding(awful.key(
+        { modkey }, "#" .. i + 9,
                   function ()
                         local screen = awful.screen.focused()
                         local tag = screen.tags[i]
@@ -559,7 +563,8 @@ for i = 1, 9 do
                   {description = "view tag #"..i, group = "tag"})
         )
         -- Toggle tag display.
-        table.insert(globalkeys, awful.key({ modkey, "Control" }, "#" .. i + 9,
+        awful.keyboard.append_global_keybinding(awful.key(
+        { modkey, "Control" }, "#" .. i + 9,
                   function ()
                       local screen = awful.screen.focused()
                       local tag = screen.tags[i]
@@ -570,7 +575,8 @@ for i = 1, 9 do
                   {description = "toggle tag #" .. i, group = "tag"})
         )
         -- Move client to tag.
-        table.insert(globalkeys, awful.key({ modkey, "Shift" }, "#" .. i + 9,
+        awful.keyboard.append_global_keybinding(awful.key(
+        { modkey, "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
                           local tag = client.focus.screen.tags[i]
@@ -582,7 +588,8 @@ for i = 1, 9 do
                   {description = "move focused client to tag #"..i, group = "tag"})
         )
         -- Toggle tag on focused client.
-        table.insert(globalkeys, awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
+        awful.keyboard.append_global_keybinding(awful.key(
+        { modkey, "Control", "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
                           local tag = client.focus.screen.tags[i]
@@ -610,8 +617,6 @@ clientbuttons = {
         awful.mouse.client.resize(c)
     end),
 }
--- Set keys
-root.keys(globalkeys)
 -- }}}
 
 -- {{{ Rules
@@ -687,24 +692,27 @@ awful.rules.rules = {
 -- Signal function to execute when a new client appears.
 client.connect_signal("manage", function (c)
 
-    -- TODO this code SHOULD assign an icon when one doesn't exist
-    --if not c.icon then
-    --    local icon = gears.surface()
-    --    c.icon = icon and icon._native or nil
-    --end
-
-    -- Set the windows at the slave,
-    -- i.e. put it at the end of others instead of setting it master.
-    -- if not awesome.startup then awful.client.setslave(c) end
-
     if awesome.startup
       and not c.size_hints.user_position
       and not c.size_hints.program_position then
         -- Prevent clients from being unreachable after screen count changes.
         awful.placement.no_offscreen(c)
     end
+
+    -- Icon overrides (TODO make this better)
+    -- Thanks Reddit (https://www.reddit.com/r/awesomewm/comments/b5rmeo/how_to_add_fallback_icon_to_the_tasklist)
+    local t = {}
+    t["Termite"] = os.getenv("HOME").."/.icons/ACYLS/scalable/apps/terminal.svg"
+    t["Slack"] = os.getenv("HOME").."/.local/share/icons/hicolor/24x24/apps/steam_icon_287980.png"
+    local icon = t[c.class]
+    if not icon then
+        return
+    end
+    icon = gears.surface(icon)
+    c.icon = icon and icon._native or nil
 end)
 
+-- {{{ Titlebar Setup
 -- Add a titlebar if titlebars_enabled is set to true in the rules.
 client.connect_signal("request::titlebars", function(c)
     -- buttons for the titlebar
@@ -719,45 +727,48 @@ client.connect_signal("request::titlebars", function(c)
         end),
     }
 
-    awful.titlebar(c).widget = {
-        { -- Left
-            awful.titlebar.widget.iconwidget(c),
-            buttons = buttons,
-            layout  = wibox.layout.fixed.horizontal
+    awful.titlebar(c, {position = "left"}): setup {
+        { -- Right
+            awful.titlebar.widget.closebutton    (c),
+            --awful.titlebar.widget.floatingbutton (c),
+            awful.titlebar.widget.maximizedbutton(c),
+            awful.titlebar.widget.minimizebutton(c),
+            --awful.titlebar.widget.stickybutton   (c),
+            --awful.titlebar.widget.ontopbutton    (c),
+            layout = wibox.layout.fixed.vertical()
         },
         { -- Middle
             { -- Title
                 align  = "center",
-                widget = awful.titlebar.widget.titlewidget(c)
+                widget = awful.titlebar.widget.titlewidget(c),
+                visible = false
             },
             buttons = buttons,
-            layout  = wibox.layout.flex.horizontal
+            layout  = wibox.layout.flex.vertical
         },
-        { -- Right
-            awful.titlebar.widget.floatingbutton (c),
-            awful.titlebar.widget.maximizedbutton(c),
-            awful.titlebar.widget.stickybutton   (c),
-            awful.titlebar.widget.ontopbutton    (c),
-            awful.titlebar.widget.closebutton    (c),
-            layout = wibox.layout.fixed.horizontal()
+        { -- Left
+            awful.titlebar.widget.iconwidget(c),
+            buttons = buttons,
+            layout  = wibox.layout.fixed.vertical
         },
-        layout = wibox.layout.align.horizontal
+        layout = wibox.layout.align.vertical
     }
 end)
-
+--- }}}
+--- {{{ Sloppy focus rules
 -- Enable sloppy focus, so that focus follows mouse.
 client.connect_signal("mouse::enter", function(c)
     if c.name ~= "CellWriter" and c.name ~= "Onboard" then
         c:emit_signal("request::activate", "mouse_enter", {raise = false})
     end
 end)
-
+--- }}}
+--- {{{ Border focus setup
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
-
+--- }}}
 dofile(gears.filesystem.get_configuration_dir() .. "tag_notify.lua")
 dofile(gears.filesystem.get_configuration_dir() .. "tabber.lua")
-
 -- Spawn all the programs needed at startup
 for _,v in pairs(autostart) do
     awful.spawn.once(v)

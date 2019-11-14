@@ -11,7 +11,6 @@ local themes_path = gfs.get_themes_dir()
 local awful = require('awful')
 local wibox = require('wibox')
 local gears = require('gears')
-local naughty = require('naughty')
 
 -- TODO find way to load from ~/.cache and not by symlinking to awesome
 -- directory
@@ -158,11 +157,19 @@ theme.icon_theme = nil
 --- {{{ Search box widget
 local search_text = wibox.widget.textbox()
 search_text.text = 'Search'
+local search_image = wibox.widget {
+    {
+        image = theme.awesome_icon, -- TODO change this
+        widget = wibox.widget.imagebox
+    },
+    margins = 10,
+    widget = wibox.container.margin,
+}
 local search_box = wibox.widget {
     {
         {
             {
-                -- TODO add iconbox here
+                search_image,
                 search_text,
                 layout = wibox.layout.fixed.horizontal,
             },
@@ -245,19 +252,24 @@ screen.connect_signal("request::desktop_decoration", function(s)
                 widget        = wibox.container.background,
             },
             {
-                awful.widget.clienticon,
+                {
+                    id = 'clienticon',
+                    widget = awful.widget.clienticon,
+                },
                 margins = 5,
                 widget  = wibox.container.margin
             },
             nil,
             layout = wibox.layout.align.vertical,
             -- TODO is there a click callback???
-            create_callback = function(self, c, index, objects) local tooltip = awful.tooltip({
-                objects = { self },
-                timer_function = function()
-                    return c.name
-                end,
-            })
+            create_callback = function(self, c, index, objects) 
+                local tooltip = awful.tooltip({
+                    objects = { self },
+                    timer_function = function()
+                        return c.name
+                    end,
+                })
+                self:get_children_by_id('clienticon')[1].client = c
             end,
         },
     }

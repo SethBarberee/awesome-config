@@ -3,45 +3,62 @@ local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 
+local muted = false -- Keep track of mute
+local sink = ""
+
 -- TODO add volume icon
 local volume = wibox.widget {
     {
-        id = 'bar',
-        maximum       = 100,
-        value         = 50,
-        forced_height = 20,
-        forced_width  = 100,
-        bar_height = 3,
-        bar_active_color         = beautiful.bg_focus,
-        bar_color      = beautiful.bg_normal,
-        widget        = wibox.widget.slider,
+        {
+            id      = 'textbox',
+            text    = "50",
+            halign  = 'center',
+            valign  = 'center',
+            widget  = wibox.widget.textbox
+        },
+        right = 2,
+        left = 2,
+        widget = wibox.container.margin,
     },
     {
-        id = 'textbox',
-        text = "50",
-        halign = 'center',
-        valign = 'center',
-        widget  = wibox.widget.textbox
+        id                  = 'bar',
+        maximum             = 100,
+        value               = 50,
+        forced_height       = 20,
+        forced_width        = 100,
+        bar_height          = 3,
+        bar_active_color    = beautiful.bg_focus,
+        bar_color           = beautiful.bg_normal,
+        handle_color        = beautiful.bg_focus,
+        widget              = wibox.widget.slider,
     },
-    layout = wibox.layout.stack
+    layout = wibox.layout.align.horizontal
 }
 
-local muted = false -- Keep track of mute
+local volume_t = awful.tooltip {
+    objects = {volume},
+    timer_function = function()
+        -- TODO fix this as it filters out my bluetooth headphones
+        awful.spawn.easy_async_with_shell("pamixer --list-sinks | awk '/output/{print $3,$4,$5,$6,$7,$8}'", function(stdout)
+            sink = stdout
+        end)
+        return sink
+    end,
+}
 
 local function update_volume()
     awful.spawn.easy_async_with_shell("pamixer --get-mute", function(stdout)
         if string.match(stdout, 'false') then
             awful.spawn.easy_async_with_shell("pamixer --get-volume", function(stdout)
                 -- TODO text concatenation
-                volume.textbox.text = stdout
-                --volume.bar:set_value(tonumber(stdout))
-                volume.bar.value = tonumber(stdout)
+                volume:get_children_by_id("textbox")[1].text = "V: " .. stdout
+                volume:get_children_by_id("bar")[1].value    = tonumber(stdout)
             end)
             muted = false
         else 
-            muted = true
-            volume.textbox.text = "Muted"
-            volume.bar.value = 0
+            muted               = true
+            volume:get_children_by_id("textbox")[1].text = "V: Muted"
+            volume:get_children_by_id("bar")[1].value    = 0
         end
     end)
 end
@@ -62,10 +79,9 @@ function volume.mute()
         muted = false
         update_volume()
     else 
-        muted = true
-        volume.textbox.text = "Muted"
-        --volume.bar:set_value(tonumber(stdout))
-        volume.bar.value = 0
+        muted               = true
+        volume:get_children_by_id("textbox")[1].text = "Muted"
+        -- TODO maybe change bar color
     end
 end
 

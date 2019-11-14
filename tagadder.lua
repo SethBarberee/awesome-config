@@ -53,11 +53,11 @@ local tagadder = wibox.widget {
     widget = wibox.widget.textbox
 }
 
-tagadder:buttons(gears.table.join(
+tagadder.buttons = {
     awful.button({ }, 1, function () add_tag() end),
     awful.button({ }, 2, function () rename_tag() end),
     awful.button({ }, 3, function () delete_tag() end)
-))
+}
 
 return tagadder
 
