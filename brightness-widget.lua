@@ -32,15 +32,17 @@ local brightness = wibox.widget {
     layout = wibox.layout.align.horizontal
 }
 
---local brightness_t = awful.tooltip {
---    objects = {brightness},
---    timer_function = function()
---        awful.spawn.easy_async_with_shell("xbacklight --list-sinks | awk '/output/{print $3,$4,$5,$6,$7,$8}'", function(stdout)
---            sink = stdout
---        end)
---        return sink
---    end,
---}
+local sink = ""
+
+local brightness_t = awful.tooltip {
+    objects = {brightness},
+    timer_function = function()
+        awful.spawn.easy_async_with_shell("xbacklight -list", function(stdout)
+            sink = "Brightness: \n" .. stdout
+        end)
+        return sink
+    end,
+}
 
 local function update_brightness()
     awful.spawn.easy_async_with_shell("xbacklight -get", function(stdout)
