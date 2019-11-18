@@ -39,7 +39,8 @@ local volume_t = awful.tooltip {
     objects = {volume},
     timer_function = function()
         -- TODO fix this as it filters out my bluetooth headphones
-        awful.spawn.easy_async_with_shell("pamixer --list-sinks | awk '/output/{print $3,$4,$5,$6,$7,$8}'", function(stdout)
+        -- TODO this adds an extra line... gotta get rid of it
+        awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 3- -d ' '", function(stdout)
             sink = stdout
         end)
         return sink
