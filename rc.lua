@@ -212,9 +212,50 @@ screen.connect_signal("request::desktop_decoration", function(s)
     si.taglist = awful.widget.taglist {
         screen  = s,
         filter  = awful.widget.taglist.filter.all,
-        buttons = taglist_buttons
-    }
+        buttons = taglist_buttons,
+        widget_template = {
+          {
+            {
+              {
+                {
+                  {
+                    id = "text_role",
+                    widget = wibox.widget.textbox
+                  },
+                  layout = wibox.layout.fixed.horizontal
+                },
+                left = 2,
+                right = 2,
+                widget = wibox.container.margin
+              },
+              id = "background_role",
+              widget = wibox.container.background
+            },
+            bottom = 2,
+            color = beautiful.bg_normal,
+            widget = wibox.container.margin,
+            id = "current_tag"
+          },
+          left = 3,
+          right = 3,
+          layout = wibox.container.margin,
+          create_callback = function(self, t, index, objects)
+            local col = t.selected and beautiful.border_focus or beautiful.bg_normal
+            local current_tag = self:get_children_by_id("current_tag")[1]
 
+            current_tag.color = col
+
+            t:connect_signal("property::urgent", function()
+                current_tag.color = beautiful.fg_urgent
+              end
+            )
+          end,
+          update_callback = function(self, t, index, objects)
+            local col = t.selected and beautiful.border_focus or beautiful.bg_normal
+            self:get_children_by_id("current_tag")[1].color = col
+          end
+      }
+    }
 
     -- Create a promptbox for each screen
     si.mypromptbox = awful.widget.prompt()
@@ -235,7 +276,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
     local layoutpopup = awful.popup {
         widget = wibox.widget {
             awful.widget.layoutlist {
-                source      = awful.widget.layoutlist.source.default_layouts,
+                source      = awful.widget.layoutlist.source.current_screen,
                 screen      = s,
                 base_layout = wibox.widget {
                     spacing         = 5,
@@ -697,6 +738,11 @@ client.connect_signal("manage", function (c)
       and not c.size_hints.program_position then
         -- Prevent clients from being unreachable after screen count changes.
         awful.placement.no_offscreen(c)
+    end
+
+    if not awesome.startup then
+        -- Set as slave instead of master
+        awful.client.setslave(c)
     end
 
     -- Icon overrides (TODO make this better)
