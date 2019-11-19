@@ -83,8 +83,14 @@ awful.tag.attached_connect_signal(s, "property::layout", function ()
 end)
 
 awful.tag.attached_connect_signal(s, "property::urgent", function (t)
-    -- TODO is there a way to find that specific client?
     naughty.notification { title = "Urgent client:", message = "Tag ".. t.index}
+    local c_table = t:clients() -- get a table of all clients
+    for k, v in pairs(c_table) do
+        -- iterate over the table and determine what is urgent
+        if v.urgent then
+            naughty.notification { title = "Urgent client:", message = v.instance .. ": " .. v.name}
+        end
+    end
 end)
 
 tag.connect_signal("property::selected", function (t)
