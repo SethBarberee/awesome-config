@@ -212,13 +212,12 @@ local tasklist_buttons = {
 --- }}} 
 --- {{{ Widget bar setup
 screen.connect_signal("request::desktop_decoration", function(s)
-    local notif_wb = awful.wibar {
+    notif_wb = awful.wibar {
         position = 'bottom',
         height   = 48,
         type = 'dock',
         bg = 'transparent',
         screen = s,
-        --visible  = client.instances() > 0, -- TODO maybe make it appear when we have clients
     }
 
     -- {{{ Tasklist wibar
@@ -298,10 +297,21 @@ screen.connect_signal("request::desktop_decoration", function(s)
 end)
 --- }}}
 
--- TODO migrate to only show when we have clients
---client.connect_signal("manage", function()
---    notif_wb.visible = client.instances() > 0
---end)
+
+-- Only start up wibar when we have clients
+client.connect_signal("manage", function()
+    local t = awful.screen.focused().selected_tag
+    notif_wb.visible = #(t:clients()) > 0
+end)
+
+client.connect_signal("unmanage", function()
+    local t = awful.screen.focused().selected_tag
+    notif_wb.visible = #(t:clients()) > 0
+end)
+
+tag.connect_signal("property::selected", function (t)
+    notif_wb.visible = #(t:clients()) > 0
+end)
 
 -- }}}
 

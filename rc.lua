@@ -258,7 +258,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
     }
 
     -- Create a promptbox for each screen
-    si.mypromptbox = awful.widget.prompt()
+    s.mypromptbox = awful.widget.prompt()
     -- Create an imagebox widget which will contain an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
     si.mylayoutbox = awful.widget.layoutbox {
@@ -345,8 +345,8 @@ screen.connect_signal("request::desktop_decoration", function(s)
                         layout = wibox.layout.fixed.horizontal,
                         mylauncher,
                         si.taglist,
-                        tagadder,
-                        si.mypromptbox,
+                        tagadder, -- TODO multi-monitor magic
+                        s.mypromptbox,
                     }
                 }
             },
