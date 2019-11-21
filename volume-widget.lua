@@ -2,20 +2,25 @@ local awful = require("awful")
 local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
+local naughty = require('naughty')
 
 local muted = false -- Keep track of mute
 local sink = ""
+
+local volume_menu = {}
+local table_len = 0 -- keep track of table length
 
 -- TODO add volume icon
 local volume = wibox.widget {
     {
         {
             id      = 'textbox',
-            text    = "50",
+            text    = "V: 50",
             halign  = 'center',
             valign  = 'center',
             widget  = wibox.widget.textbox
         },
+        --id = 'margin',
         right = 2,
         left = 2,
         widget = wibox.container.margin,
@@ -36,11 +41,18 @@ local volume = wibox.widget {
 }
 
 local volume_t = awful.tooltip {
-    objects = {volume},
+    objects = {volume.bar},
     timer_function = function()
-        -- TODO fix this as it filters out my bluetooth headphones
         -- TODO this adds an extra line... gotta get rid of it
         awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 3- -d ' '", function(stdout)
+            for s in stdout:gmatch("[^\r\n]+") do 
+                if not volume_menu[s] then
+                    volume_menu[s] = 0
+                    table_len = table_len + 1
+                else 
+                    volume_menu[s] = volume_menu[s] + 1
+                end
+            end
             sink = stdout
         end)
         return sink
@@ -48,10 +60,10 @@ local volume_t = awful.tooltip {
 }
 
 local function update_volume()
-    awful.spawn.easy_async_with_shell("pamixer --get-mute", function(stdout)
-        if string.match(stdout, 'false') then
+    awful.spawn.easy_async_with_shell("pamixer --get-volume-human", function(stdout)
+        if not string.match(stdout, 'muted') then
+            -- TODO move to parse number from previous output to save on another shell call
             awful.spawn.easy_async_with_shell("pamixer --get-volume", function(stdout)
-                -- TODO text concatenation
                 volume:get_children_by_id("textbox")[1].text = "V: " .. stdout
                 volume:get_children_by_id("bar")[1].value    = tonumber(stdout)
             end)
@@ -59,7 +71,6 @@ local function update_volume()
         else 
             muted               = true
             volume:get_children_by_id("textbox")[1].text = "V: Muted"
-            volume:get_children_by_id("bar")[1].value    = 0
         end
     end)
 end
@@ -75,21 +86,27 @@ function volume.lower_volume()
 end
 
 function volume.mute()
-    awful.spawn.with_shell("pamixer --toggle-mute")
-    if muted then
-        muted = false
-        update_volume()
-    else 
-        muted               = true
-        volume:get_children_by_id("textbox")[1].text = "Muted"
-        -- TODO maybe change bar color
-    end
+    muted = not muted -- toggle mute status
+    update_volume()
 end
 
-volume.bar:connect_signal('property::value', function()
+volume:get_children_by_id("bar")[1]:connect_signal('property::value', function()
     awful.spawn.easy_async_with_shell("pamixer --set-volume " .. volume.bar.value, function()
         update_volume()
     end)
+end)
+
+volume:get_children_by_id("textbox")[1]:connect_signal('mouse::enter', function()
+    -- Create the sink menu from the length - 1 (to get rid of "Sinks: " part)
+    local volume_items = {}
+    if table_len ~= 0 then -- check if we have enumerated the devices yet
+        for s =1,(table_len - 1) do  -- same reason here for avoiding "Sink"
+            local string = "Sink " .. s
+            local cmd = "pamixer --sink " .. s
+            table.insert(volume_items,  {string, function() awful.spawn(cmd) end} )
+        end
+        awful.menu(volume_items):toggle()
+    end
 end)
 
 update_volume()
