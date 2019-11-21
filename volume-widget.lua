@@ -43,17 +43,20 @@ local volume = wibox.widget {
 local volume_t = awful.tooltip {
     objects = {volume.bar},
     timer_function = function()
-        -- TODO this adds an extra line... gotta get rid of it
-        awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 3- -d ' '", function(stdout)
-            for s in stdout:gmatch("[^\r\n]+") do 
-                if not volume_menu[s] then
-                    volume_menu[s] = 0
-                    table_len = table_len + 1
-                else 
-                    volume_menu[s] = volume_menu[s] + 1
+        -- TODO filter better instead of running commands twice.. but hey, it works
+        awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 1,3- -d ' '", function(out)        
+            awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 1,3- -d ' ' | grep -E '[0-9]' | cut -f 1 -d ' '", function(stdout)
+                for s in stdout:gmatch("[^\r\n]+") do 
+                    -- Lua hates tables at 0 yet pamixer starts at 0... add 1 to each index
+                    if not volume_menu[tonumber(s) + 1] then
+                        volume_menu[tonumber(s) + 1] = 0
+                        table_len = table_len + 1
+                    else 
+                        volume_menu[tonumber(s) + 1] = volume_menu[tonumber(s) + 1] + 1
+                    end
                 end
-            end
-            sink = stdout
+            end)
+            sink = out
         end)
         return sink
     end,
@@ -99,10 +102,12 @@ end)
 volume:get_children_by_id("textbox")[1]:connect_signal('mouse::enter', function()
     -- Create the sink menu from the length - 1 (to get rid of "Sinks: " part)
     local volume_items = {}
+    -- Create sink menu based off the indexes we gathered earlier
     if table_len ~= 0 then -- check if we have enumerated the devices yet
-        for s =1,(table_len - 1) do  -- same reason here for avoiding "Sink"
-            local string = "Sink " .. s
-            local cmd = "pamixer --sink " .. s
+        for k,v in pairs(volume_menu) do
+            local index = tonumber(k) - 1 -- counteract our padding earlier of the index
+            local string = "Sink " .. index
+            local cmd = "pactl set-default-sink " .. index
             table.insert(volume_items,  {string, function() awful.spawn(cmd) end} )
         end
         awful.menu(volume_items):toggle()
