@@ -9,6 +9,7 @@ local sink = ""
 
 local volume_menu = {}
 local table_len = 0 -- keep track of table length
+local vol_menu
 
 -- TODO add volume icon
 local volume = wibox.widget {
@@ -46,6 +47,7 @@ local volume_t = awful.tooltip {
         -- TODO filter better instead of running commands twice.. but hey, it works
         awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 1,3- -d ' '", function(out)        
             awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 1,3- -d ' ' | grep -E '[0-9]' | cut -f 1 -d ' '", function(stdout)
+                volume_menu = {} -- reset the table
                 for s in stdout:gmatch("[^\r\n]+") do 
                     -- Lua hates tables at 0 yet pamixer starts at 0... add 1 to each index
                     if not volume_menu[tonumber(s) + 1] then
@@ -110,7 +112,17 @@ volume:get_children_by_id("textbox")[1]:connect_signal('mouse::enter', function(
             local cmd = "pactl set-default-sink " .. index
             table.insert(volume_items,  {string, function() awful.spawn(cmd) end} )
         end
-        awful.menu(volume_items):toggle()
+        vol_menu = awful.menu(volume_items)
+        -- Start a timer to autoclose the menu
+        gears.timer {
+            timeout = 4,
+            autostart = true,
+            single_shot = true,
+            callback = function() 
+                vol_menu:hide()
+            end
+        }
+        vol_menu:show()
     end
 end)
 
