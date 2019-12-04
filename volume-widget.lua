@@ -63,7 +63,6 @@ local volume_t = awful.tooltip {
         return sink
     end,
 }
-
 local function update_volume()
     awful.spawn.easy_async_with_shell("pamixer --get-volume-human", function(stdout)
         if not string.match(stdout, 'muted') then
@@ -92,6 +91,7 @@ end
 
 function volume.mute()
     muted = not muted -- toggle mute status
+    awful.spawn.with_shell("pamixer -t") 
     update_volume()
 end
 
@@ -126,8 +126,4 @@ volume:get_children_by_id("textbox")[1]:connect_signal('mouse::enter', function(
     end
 end)
 
-update_volume()
-
--- TODO how to run update_volume on creation (below doesn't work)
---return setmetatable(volume, { __call = function(_, ...) return update_volume() end})
-return volume
+return setmetatable(volume, { __call = function(_, ...) update_volume() return volume end})

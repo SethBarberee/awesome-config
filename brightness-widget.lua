@@ -70,6 +70,4 @@ end)
 
 update_brightness()
 
--- TODO how to run update_brightness on creation (below doesn't work)
---return setmetatable(brightness, { __call = function(_, ...) return update_brightness() end})
-return brightness
+return setmetatable(brightness, { __call = function(_, ...) update_brightness() return brightness end})
