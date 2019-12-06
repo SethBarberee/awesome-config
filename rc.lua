@@ -138,11 +138,6 @@ local bat = battery (
 }
 )
 
--- Create a textclock widget
-mytextclock = wibox.widget.textclock()
-local month_calendar = awful.widget.calendar_popup.month()
-month_calendar:attach( mytextclock, "tr" )
-
 local tasklist_buttons = {
     awful.button({ }, 1, function (c)
         if c == client.focus then
@@ -189,6 +184,11 @@ screen.connect_signal("request::desktop_decoration", function(s)
 
     -- Each screen has its own tag table.
     awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[2])
+
+    -- Create a textclock widget
+    s.mytextclock = wibox.widget.textclock()
+    s.month_calendar = awful.widget.calendar_popup.month()
+    s.month_calendar:attach( s.mytextclock, "tr" )
 
     -- Create a wibox for each screen and add it
     local taglist_buttons = {
@@ -271,49 +271,51 @@ screen.connect_signal("request::desktop_decoration", function(s)
         }
     }
     
+    --  TODO create this properly for each monitor
     -- Add a fancy popup when we change layouts
     -- Taken from: https://github.com/raphaelfournier/Dotfiles/blob/master/awesome/.config/awesome/rc.lua
-    local layoutpopup = awful.popup {
-        widget = wibox.widget {
-            awful.widget.layoutlist {
-                source      = awful.widget.layoutlist.source.current_screen,
-                screen      = s,
-                base_layout = wibox.widget {
-                    spacing         = 5,
-                    forced_num_cols = 2,
-                    layout          = wibox.layout.grid.vertical,
-                },
-                widget_template = {
-                    {
-                        {
-                            id            = 'icon_role',
-                            forced_height = 46,
-                            forced_width  = 46,
-                            widget        = wibox.widget.imagebox,
-                        },
-                        margins = 4,
-                        widget  = wibox.container.margin,
-                    },
-                    id              = 'background_role',
-                    forced_width    = 48,
-                    forced_height   = 48,
-                    shape           = gears.shape.rounded_rect,
-                    widget          = wibox.container.background,
-                },
-            },
-            margins = 8,
-            widget  = wibox.container.margin,
-        },
-        -- TODO wrap in another margin container to move it down
-        placement         = awful.placement.top_right,
-        border_color      = beautiful.border_focus,
-        border_width      = beautiful.border_width,
-        shape             = gears.shape.infobubble,
-        hide_on_right_click = true,
-        visible = false,
-        ontop = true,
-    }
-    layoutpopup:bind_to_widget(si.mylayoutbox)
+    --si.layoutpopup = awful.popup {
+    --    widget = wibox.widget {
+    --        awful.widget.layoutlist {
+    --            source      = awful.widget.layoutlist.source.current_screen,
+    --            screen      = s,
+    --            base_layout = wibox.widget {
+    --                spacing         = 5,
+    --                forced_num_cols = 2,
+    --                layout          = wibox.layout.grid.vertical,
+    --            },
+    --            widget_template = {
+    --                {
+    --                    {
+    --                        id            = 'icon_role',
+    --                        forced_height = 46,
+    --                        forced_width  = 46,
+    --                        widget        = wibox.widget.imagebox,
+    --                    },
+    --                    margins = 4,
+    --                    widget  = wibox.container.margin,
+    --                },
+    --                id              = 'background_role',
+    --                forced_width    = 48,
+    --                forced_height   = 48,
+    --                shape           = gears.shape.rounded_rect,
+    --                widget          = wibox.container.background,
+    --            },
+    --        },
+    --        margins = 8,
+    --        widget  = wibox.container.margin,
+    --    },
+    --    -- TODO wrap in another margin container to move it down
+    --    placement         = awful.placement.top_right,
+    --    border_color      = beautiful.border_focus,
+    --    border_width      = beautiful.border_width,
+    --    shape             = gears.shape.infobubble,
+    --    hide_on_right_click = true,
+    --    screen = s,
+    --    visible = false,
+    --    ontop = true,
+    --}
+    --si.layoutpopup:bind_to_widget(s.mylayoutbox)
 
     -- Create the wibars
     si.mywibox = awful.wibar({ 
@@ -364,7 +366,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     widget = wibox.container.place,
                     {
                         layout = wibox.layout.fixed.horizontal,
-                        mytextclock,
+                        s.mytextclock,
                     },
                 },
             },
@@ -515,49 +517,51 @@ awful.keyboard.append_global_keybindings({
               {description = "Change wal theme", group="media"})
 })
 
-clientkeys = {
-    awful.key({ modkey,           }, "f",
-        function (c)
-            c.fullscreen = not c.fullscreen
-            c:raise()
-        end,
-        {description = "toggle fullscreen", group = "client"}),
-    awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end,
-              {description = "close", group = "client"}),
-    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ,
-              {description = "toggle floating", group = "client"}),
-    awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
-              {description = "move to master", group = "client"}),
-    awful.key({ modkey,           }, "o",      function (c) c:move_to_screen()               end,
-              {description = "move to screen", group = "client"}),
-    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end,
-              {description = "toggle keep on top", group = "client"}),
-    awful.key({ modkey,           }, "n",
-        function (c)
-            -- The client currently has the input focus, so it cannot be
-            -- minimized, since minimized clients can't have the focus.
-            c.minimized = true
-        end ,
-        {description = "minimize", group = "client"}),
-    awful.key({ modkey,           }, "m",
-        function (c)
-            c.maximized = not c.maximized
-            c:raise()
-        end ,
-        {description = "(un)maximize", group = "client"}),
-    awful.key({ modkey, "Control" }, "m",
-        function (c)
-            c.maximized_vertical = not c.maximized_vertical
-            c:raise()
-        end ,
-        {description = "(un)maximize vertically", group = "client"}),
-    awful.key({ modkey, "Shift"   }, "m",
-        function (c)
-            c.maximized_horizontal = not c.maximized_horizontal
-            c:raise()
-        end ,
-        {description = "(un)maximize horizontally", group = "client"}),
-}
+client.connect_signal("request::default_keybindings", function()
+    awful.keyboard.append_client_keybindings({
+        awful.key({ modkey,           }, "f",
+            function (c)
+                c.fullscreen = not c.fullscreen
+                c:raise()
+            end,
+            {description = "toggle fullscreen", group = "client"}),
+        awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end,
+                  {description = "close", group = "client"}),
+        awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ,
+                  {description = "toggle floating", group = "client"}),
+        awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
+                  {description = "move to master", group = "client"}),
+        awful.key({ modkey,           }, "o",      function (c) c:move_to_screen()               end,
+                  {description = "move to screen", group = "client"}),
+        awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end,
+                  {description = "toggle keep on top", group = "client"}),
+        awful.key({ modkey,           }, "n",
+            function (c)
+                -- The client currently has the input focus, so it cannot be
+                -- minimized, since minimized clients can't have the focus.
+                c.minimized = true
+            end ,
+            {description = "minimize", group = "client"}),
+        awful.key({ modkey,           }, "m",
+            function (c)
+                c.maximized = not c.maximized
+                c:raise()
+            end ,
+            {description = "(un)maximize", group = "client"}),
+        awful.key({ modkey, "Control" }, "m",
+            function (c)
+                c.maximized_vertical = not c.maximized_vertical
+                c:raise()
+            end ,
+            {description = "(un)maximize vertically", group = "client"}),
+        awful.key({ modkey, "Shift"   }, "m",
+            function (c)
+                c.maximized_horizontal = not c.maximized_horizontal
+                c:raise()
+            end ,
+            {description = "(un)maximize horizontally", group = "client"}),
+    })
+end)
 
 -- Add media keys into the keys
 awful.keyboard.append_global_keybindings({
@@ -643,21 +647,23 @@ for i = 1, 9 do
         )
 end
 
-clientbuttons = {
-    awful.button({ }, 1, function (c)
-        if c.name ~= "CellWriter" and c.name ~= "Onboard" then
+client.connect_signal("request::default_mousebindings", function()
+    awful.mouse.append_client_mousebindings({
+        awful.button({ }, 1, function (c)
+            if c.name ~= "CellWriter" and c.name ~= "Onboard" then
+                c:emit_signal("request::activate", "mouse_click", {raise = true})
+            end
+        end),
+        awful.button({ modkey }, 1, function (c)
             c:emit_signal("request::activate", "mouse_click", {raise = true})
-        end
-    end),
-    awful.button({ modkey }, 1, function (c)
-        c:emit_signal("request::activate", "mouse_click", {raise = true})
-        awful.mouse.client.move(c)
-    end),
-    awful.button({ modkey }, 3, function (c)
-        c:emit_signal("request::activate", "mouse_click", {raise = true})
-        awful.mouse.client.resize(c)
-    end),
-}
+            awful.mouse.client.move(c)
+        end),
+        awful.button({ modkey }, 3, function (c)
+            c:emit_signal("request::activate", "mouse_click", {raise = true})
+            awful.mouse.client.resize(c)
+        end),
+    })
+end)
 -- }}}
 
 -- {{{ Rules
@@ -669,8 +675,6 @@ awful.rules.rules = {
                      border_color = beautiful.border_normal,
                      focus = awful.client.focus.filter,
                      raise = true,
-                     keys = clientkeys,
-                     buttons = clientbuttons,
                      screen = awful.screen.preferred,
                      placement = awful.placement.no_overlap+awful.placement.no_offscreen
      }
@@ -814,7 +818,7 @@ client.connect_signal("focus", function(c) c.border_color = beautiful.border_foc
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 --- }}}
 dofile(gears.filesystem.get_configuration_dir() .. "tag_notify.lua")
-dofile(gears.filesystem.get_configuration_dir() .. "tabber.lua")
+require("tabber")
 -- Spawn all the programs needed at startup
 for _,v in pairs(autostart) do
     awful.spawn.once(v)
