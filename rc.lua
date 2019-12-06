@@ -566,86 +566,91 @@ end)
 -- Add media keys into the keys
 awful.keyboard.append_global_keybindings({
     awful.key({}, "XF86AudioPlay", function() awful.spawn.with_shell("playerctl play-pause") end,
-		      {description = "Toggle Music Player", group="media"}),
-	awful.key({}, "XF86AudioPrev", function() awful.spawn.with_shell("playerctl previous") end,
-	          {description = "Go to Previous Song", group="media"}),
-	awful.key({}, "XF86AudioNext", function() awful.spawn.with_shell("playerctl next") end,
-	          {description = "Go to Next Song", group="media"}),
-	awful.key({}, "XF86AudioStop", function() awful.spawn.with_shell("playerctl stop") end,
-	          {description = "Stop Music", group="media"}),
-	awful.key({}, "XF86AudioMute", function() volume.mute() end,
-	          {description = "Toggle Mute", group="media"}),
-        awful.key({}, "XF86AudioRaiseVolume", function() volume.raise_volume() end,
+              {description = "Toggle Music Player", group="media"}),
+    awful.key({}, "XF86AudioPrev", function() awful.spawn.with_shell("playerctl previous") end,
+              {description = "Go to Previous Song", group="media"}),
+    awful.key({}, "XF86AudioNext", function() awful.spawn.with_shell("playerctl next") end,
+              {description = "Go to Next Song", group="media"}),
+    awful.key({}, "XF86AudioStop", function() awful.spawn.with_shell("playerctl stop") end,
+              {description = "Stop Music", group="media"}),
+    awful.key({}, "XF86AudioMute", function() volume.mute() end,
+              {description = "Toggle Mute", group="media"}),
+    awful.key({}, "XF86AudioRaiseVolume", function() volume.raise_volume() end,
               {description = "Increase Volume", group="media"}),
-        awful.key({}, "XF86AudioLowerVolume", function() volume.lower_volume() end,
-		      {description = "Decrease Volume", group="media"}),
-        awful.key({}, "XF86MonBrightnessUp", function() brightness.raise_brightness() end,
-		      {description = "Increase Brightness", group="monitor"}),
-        awful.key({}, "XF86MonBrightnessDown", function() brightness.lower_brightness() end,
-		      {description = "Decrease Brightness", group="monitor"}),
+    awful.key({}, "XF86AudioLowerVolume", function() volume.lower_volume() end,
+              {description = "Decrease Volume", group="media"}),
+    awful.key({}, "XF86MonBrightnessUp", function() brightness.raise_brightness() end,
+              {description = "Increase Brightness", group="monitor"}),
+    awful.key({}, "XF86MonBrightnessDown", function() brightness.lower_brightness() end,
+              {description = "Decrease Brightness", group="monitor"}),
 })
 
 -- Plugin
 awful.keyboard.append_global_keybinding(
-    awful.key({ modkey,           }, "e",      revelation)
+    awful.key({ modkey,           }, "e",      revelation,
+              {description = "toggle revelation", group="plugin"})
 )
 
 
 -- Bind all key numbers to tags.
 -- Be careful: we use keycodes to make it work on any keyboard layout.
 -- This should map on the top row of your keyboard, usually 1 to 9.
-for i = 1, 9 do
-        -- View tag only.
-        awful.keyboard.append_global_keybinding(awful.key(
-        { modkey }, "#" .. i + 9,
-                  function ()
-                        local screen = awful.screen.focused()
-                        local tag = screen.tags[i]
-                        if tag then
-                           tag:view_only()
-                        end
-                  end,
-                  {description = "view tag #"..i, group = "tag"})
-        )
-        -- Toggle tag display.
-        awful.keyboard.append_global_keybinding(awful.key(
-        { modkey, "Control" }, "#" .. i + 9,
-                  function ()
-                      local screen = awful.screen.focused()
-                      local tag = screen.tags[i]
-                      if tag then
-                         awful.tag.viewtoggle(tag)
-                      end
-                  end,
-                  {description = "toggle tag #" .. i, group = "tag"})
-        )
-        -- Move client to tag.
-        awful.keyboard.append_global_keybinding(awful.key(
-        { modkey, "Shift" }, "#" .. i + 9,
-                  function ()
-                      if client.focus then
-                          local tag = client.focus.screen.tags[i]
-                          if tag then
-                              client.focus:move_to_tag(tag)
-                          end
-                     end
-                  end,
-                  {description = "move focused client to tag #"..i, group = "tag"})
-        )
-        -- Toggle tag on focused client.
-        awful.keyboard.append_global_keybinding(awful.key(
-        { modkey, "Control", "Shift" }, "#" .. i + 9,
-                  function ()
-                      if client.focus then
-                          local tag = client.focus.screen.tags[i]
-                          if tag then
-                              client.focus:toggle_tag(tag)
-                          end
-                      end
-                  end,
-                  {description = "toggle focused client on tag #" .. i, group = "tag"})
-        )
-end
+awful.keyboard.append_global_keybindings({
+    awful.key {
+        modifiers   = { modkey },
+        keygroup    = "numrow",
+        description = "only view tag",
+        group       = "tag",
+        on_press    = function (index)
+            local screen = awful.screen.focused()
+            local tag = screen.tags[index]
+            if tag then
+                tag:view_only()
+            end
+        end,
+    },
+    awful.key {
+        modifiers   = { modkey, "Control" },
+        keygroup    = "numrow",
+        description = "toggle tag",
+        group       = "tag",
+        on_press    = function (index)
+            local screen = awful.screen.focused()
+            local tag = screen.tags[index]
+            if tag then
+                awful.tag.viewtoggle(tag)
+            end
+        end,
+    },
+    awful.key {
+        modifiers = { modkey, "Shift" },
+        keygroup    = "numrow",
+        description = "move focused client to tag",
+        group       = "tag",
+        on_press    = function (index)
+            if client.focus then
+                local tag = client.focus.screen.tags[index]
+                if tag then
+                    client.focus:move_to_tag(tag)
+                end
+            end
+        end,
+    },
+    awful.key {
+        modifiers   = { modkey, "Control", "Shift" },
+        keygroup    = "numrow",
+        description = "toggle focused client on tag",
+        group       = "tag",
+        on_press    = function (index)
+            if client.focus then
+                local tag = client.focus.screen.tags[index]
+                if tag then
+                    client.focus:toggle_tag(tag)
+                end
+            end
+        end,
+    }
+})
 
 client.connect_signal("request::default_mousebindings", function()
     awful.mouse.append_client_mousebindings({
