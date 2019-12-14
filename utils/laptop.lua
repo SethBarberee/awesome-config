@@ -1,7 +1,4 @@
-local awful = require("awful")
-local naughty = require("naughty")
-
-laptop = {
+local laptop = {
     islaptop = false,
     touch = false
 }
@@ -36,7 +33,5 @@ local function check_laptop()
     -- Yep, it's a desktop
 end
 
-check_laptop()
-
-return laptop
+return setmetatable(laptop, { __call = function(_, ...) check_laptop() return laptop end})
 
