@@ -1,8 +1,16 @@
+----------------------------------------------
+--
+-- Control PulseAudio sink with slider
+-- Hover over slider for tooltip listing the sinks
+-- Hover over textbox for menu to switch default sink
+--
+-- Author: Seth Barberee <seth.barberee@gmail.com>
+----------------------------------------------
+
 local awful = require("awful")
 local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local naughty = require('naughty')
 
 local muted = false -- Keep track of mute
 local sink = ""
@@ -42,18 +50,18 @@ local volume = wibox.widget {
 }
 
 local volume_t = awful.tooltip {
-    objects = {volume.bar},
+    objects = {volume.bar}, -- Attach tooltip to slider
     timer_function = function()
         -- TODO filter better instead of running commands twice.. but hey, it works
-        awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 1,3- -d ' '", function(out)        
+        awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 1,3- -d ' '", function(out)
             awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 1,3- -d ' ' | grep -E '[0-9]' | cut -f 1 -d ' '", function(stdout)
                 volume_menu = {} -- reset the table
-                for s in stdout:gmatch("[^\r\n]+") do 
+                for s in stdout:gmatch("[^\r\n]+") do
                     -- Lua hates tables at 0 yet pamixer starts at 0... add 1 to each index
                     if not volume_menu[tonumber(s) + 1] then
                         volume_menu[tonumber(s) + 1] = 0
                         table_len = table_len + 1
-                    else 
+                    else
                         volume_menu[tonumber(s) + 1] = volume_menu[tonumber(s) + 1] + 1
                     end
                 end
@@ -67,12 +75,12 @@ local function update_volume()
     awful.spawn.easy_async_with_shell("pamixer --get-volume-human", function(stdout)
         if not string.match(stdout, 'muted') then
             -- TODO move to parse number from previous output to save on another shell call
-            awful.spawn.easy_async_with_shell("pamixer --get-volume", function(stdout)
-                volume:get_children_by_id("textbox")[1].text = "V: " .. stdout
-                volume:get_children_by_id("bar")[1].value    = tonumber(stdout)
+            awful.spawn.easy_async_with_shell("pamixer --get-volume", function(volume_out)
+                volume:get_children_by_id("textbox")[1].text = "V: " .. volume_out
+                volume:get_children_by_id("bar")[1].value    = tonumber(volume_out)
             end)
             muted = false
-        else 
+        else
             muted               = true
             volume:get_children_by_id("textbox")[1].text = "V: Muted"
         end
@@ -85,13 +93,13 @@ function volume.raise_volume()
 end
 
 function volume.lower_volume()
-    awful.spawn.with_shell("pamixer --decrease 10") 
+    awful.spawn.with_shell("pamixer --decrease 10")
     update_volume()
 end
 
 function volume.mute()
     muted = not muted -- toggle mute status
-    awful.spawn.with_shell("pamixer -t") 
+    awful.spawn.with_shell("pamixer -t")
     update_volume()
 end
 
@@ -118,7 +126,7 @@ volume:get_children_by_id("textbox")[1]:connect_signal('mouse::enter', function(
             timeout = 4,
             autostart = true,
             single_shot = true,
-            callback = function() 
+            callback = function()
                 vol_menu:hide()
             end
         }

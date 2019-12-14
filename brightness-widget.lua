@@ -1,5 +1,13 @@
+----------------------------------------------
+--
+-- Control brightness of device
+-- Hover over slider for tooltip listing all controllable brightness
+-- Hover over textbox for menu to switch control of brightness
+--
+-- Author: Seth Barberee <seth.barberee@gmail.com>
+----------------------------------------------
+
 local awful = require("awful")
-local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 
@@ -35,7 +43,7 @@ local brightness = wibox.widget {
 local sink = ""
 
 local brightness_t = awful.tooltip {
-    objects = {brightness},
+    objects = {brightness}, -- Attach the bar
     timer_function = function()
         awful.spawn.easy_async_with_shell("xbacklight -list", function(stdout)
             sink = "Brightness: \n" .. stdout
@@ -46,7 +54,6 @@ local brightness_t = awful.tooltip {
 
 local function update_brightness()
     awful.spawn.easy_async_with_shell("xbacklight -get", function(stdout)
-        -- TODO text concatenation
         brightness:get_children_by_id("textbox")[1].text = "B: " .. stdout
         brightness:get_children_by_id("bar")[1].value    = tonumber(stdout)
     end)
@@ -58,7 +65,7 @@ function brightness.raise_brightness()
 end
 
 function brightness.lower_brightness()
-    awful.spawn.with_shell("xbacklight -dec 5") 
+    awful.spawn.with_shell("xbacklight -dec 5")
     update_brightness()
 end
 
