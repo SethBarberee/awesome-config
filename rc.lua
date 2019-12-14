@@ -24,6 +24,7 @@ require("awful.hotkeys_popup.keys")
 
 local autostart = require("autostart") -- my autostart programs
 local tagadder = require("tagadder") -- tag manipulation widget
+local laptop = require("utils.laptop")
 
 -- }}}
 
@@ -125,41 +126,18 @@ local brightness = require("brightness-widget") -- custom volume widget
 -- Create battery widget
 -- TODO Add icon
 local bat = battery (
-{
-    settings = function()
-        if bat_now.status == "Discharging" then
-            widget:set_markup(string.format("%3d", bat_now.perc) .. "% ")
-            return
+    {
+        settings = function()
+            if bat_now.status == "Discharging" then
+                widget:set_markup(string.format("%3d", bat_now.perc) .. "% ")
+                return
+            end
+            -- We must be on AC
+            --baticon:set_image(beautiful.ac)
+            widget:set_markup(bat_now.status .. " " .. bat_now.time .. " ")
         end
-        -- We must be on AC
-        --baticon:set_image(beautiful.ac)
-        widget:set_markup(bat_now.status .. " " .. bat_now.time .. " ")
-    end
-}
-)
-
-local tasklist_buttons = {
-    awful.button({ }, 1, function (c)
-        if c == client.focus then
-            c.minimized = true
-        else
-            c:emit_signal(
-            "request::activate",
-            "tasklist",
-            {raise = true}
-            )
-        end
-    end),
-    awful.button({ }, 3, function()
-        awful.menu.client_list({ theme = { width = 250 } })
-    end),
-    awful.button({ }, 4, function ()
-        awful.client.focus.byidx(1)
-    end),
-    awful.button({ }, 5, function ()
-        awful.client.focus.byidx(-1)
-    end),
-}
+    }
+    )
 
 screen.connect_signal("request::wallpaper", function(s)
     -- Wallpaper
@@ -270,60 +248,34 @@ screen.connect_signal("request::desktop_decoration", function(s)
                            awful.button({ }, 5, function () awful.layout.inc(-1) end),
         }
     }
-    
-    --  TODO create this properly for each monitor
-    -- Add a fancy popup when we change layouts
-    -- Taken from: https://github.com/raphaelfournier/Dotfiles/blob/master/awesome/.config/awesome/rc.lua
-    --si.layoutpopup = awful.popup {
-    --    widget = wibox.widget {
-    --        awful.widget.layoutlist {
-    --            source      = awful.widget.layoutlist.source.current_screen,
-    --            screen      = s,
-    --            base_layout = wibox.widget {
-    --                spacing         = 5,
-    --                forced_num_cols = 2,
-    --                layout          = wibox.layout.grid.vertical,
-    --            },
-    --            widget_template = {
-    --                {
-    --                    {
-    --                        id            = 'icon_role',
-    --                        forced_height = 46,
-    --                        forced_width  = 46,
-    --                        widget        = wibox.widget.imagebox,
-    --                    },
-    --                    margins = 4,
-    --                    widget  = wibox.container.margin,
-    --                },
-    --                id              = 'background_role',
-    --                forced_width    = 48,
-    --                forced_height   = 48,
-    --                shape           = gears.shape.rounded_rect,
-    --                widget          = wibox.container.background,
-    --            },
-    --        },
-    --        margins = 8,
-    --        widget  = wibox.container.margin,
-    --    },
-    --    -- TODO wrap in another margin container to move it down
-    --    placement         = awful.placement.top_right,
-    --    border_color      = beautiful.border_focus,
-    --    border_width      = beautiful.border_width,
-    --    shape             = gears.shape.infobubble,
-    --    hide_on_right_click = true,
-    --    screen = s,
-    --    visible = false,
-    --    ontop = true,
-    --}
-    --si.layoutpopup:bind_to_widget(s.mylayoutbox)
+    -- Create all my widget layouts for my top wibar
+    local left_layout = wibox.layout
+    {
+        layout = wibox.layout.fixed.horizontal,
+        mylauncher,
+        si.taglist,
+        tagadder, -- TODO multi-monitor magic
+        s.mypromptbox,
+    }
+    local right_layout = wibox.layout {
+        layout = wibox.layout.fixed.horizontal
+    }
+    if laptop.islaptop then
+        right_layout:add(brightness)
+    end
+    right_layout:add(volume)
+    if laptop.islaptop then
+        right_layout:add(bat.widget)
+    end
+    right_layout:add(si.mylayoutbox)
 
     -- Create the wibars
-    si.mywibox = awful.wibar({ 
-        position = "top", 
-        screen = s, 
-        bg = "transparent", 
+    si.mywibox = awful.wibar({
+        position = "top",
+        screen = s,
+        bg = "transparent",
         fg = beautiful.wibar_fg or "#ffffff",
-        type = 'dock' 
+        type = 'dock'
     })
     --- {{{ Top wibar layout/setup
     -- Add widgets to the wibox
@@ -343,13 +295,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     top = 3,
                     bottom = 3,
                     left = 5,
-                    {
-                        layout = wibox.layout.fixed.horizontal,
-                        mylauncher,
-                        si.taglist,
-                        tagadder, -- TODO multi-monitor magic
-                        s.mypromptbox,
-                    }
+                    left_layout,
                 }
             },
         },
@@ -385,13 +331,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                 {
                     widget = wibox.container.place,
                     halign = "right",
-                    {
-                        layout = wibox.layout.fixed.horizontal,
-                        brightness,
-                        volume,
-                        bat.widget,
-                        si.mylayoutbox,
-                    }
+                    right_layout,
                 },
             },
         },
@@ -757,7 +697,6 @@ client.connect_signal("manage", function (c)
     -- Icon overrides (TODO make this better)
     -- Thanks Reddit (https://www.reddit.com/r/awesomewm/comments/b5rmeo/how_to_add_fallback_icon_to_the_tasklist)
     local t = {}
-    t["Termite"] = os.getenv("HOME").."/.icons/ACYLS/scalable/apps/terminal.svg"
     t["Slack"] = os.getenv("HOME").."/.local/share/icons/hicolor/24x24/apps/steam_icon_287980.png"
     local icon = t[c.class]
     if not icon then
@@ -785,7 +724,7 @@ client.connect_signal("request::titlebars", function(c)
     awful.titlebar(c, {position = "left"}): setup {
         { -- Right
             awful.titlebar.widget.closebutton    (c),
-            --awful.titlebar.widget.floatingbutton (c),
+            awful.titlebar.widget.floatingbutton (c),
             awful.titlebar.widget.maximizedbutton(c),
             awful.titlebar.widget.minimizebutton(c),
             --awful.titlebar.widget.stickybutton   (c),
