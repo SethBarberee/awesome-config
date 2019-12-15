@@ -2,9 +2,9 @@ local gears = require("gears")
 local laptop = require("utils.laptop") -- so we know if we are on a laptop
 local naughty = require("naughty")
 
-local autostart = {
+local apps = {
     "blueman-manager",
-    "compton --config " .. os.getenv("HOME") .. "/.config/compton/compton.conf",
+    "picom --config " .. os.getenv("HOME") .. "/.config/compton/compton.conf",
     "light-locker",
 }
 
@@ -17,14 +17,25 @@ local laptop_touch = {
 }
 
 
+local autostart = {}
+
 -- We got a laptop so add gestures
-if laptop.islaptop then
-    autostart = gears.table.join(autostart, laptop_normal)
+function startup_apps()
+    if laptop.islaptop then
+        naughty.notification { title = "DEBUG", message = "laptop normal"}
+        apps = gears.table.join(apps, laptop_normal)
+    end
+
+    -- It's a touch screen so we need our touch stuff
+    if laptop.touch then
+        naughty.notification { title = "DEBUG", message = "laptop touch"}
+        apps = gears.table.join(apps, laptop_touch)
+    end
+
+    -- Spawn all the programs needed at startup
+    for _,v in pairs(apps) do
+        awful.spawn.once(v)
+    end
 end
 
--- It's a touch screen so we need our touch stuff
-if laptop.touch then
-    autostart = gears.table.join(autostart, laptop_touch)
-end
-
-return autostart
+return setmetatable(autostart, { __call = function(_, ...) startup_apps() return autostart end})

@@ -260,11 +260,11 @@ screen.connect_signal("request::desktop_decoration", function(s)
     local right_layout = wibox.layout {
         layout = wibox.layout.fixed.horizontal
     }
-    if laptop.islaptop then
+    if laptop.data.islaptop then
         right_layout:add(brightness)
     end
     right_layout:add(volume)
-    if laptop.islaptop then
+    if laptop.data.islaptop then
         right_layout:add(bat.widget)
     end
     right_layout:add(si.mylayoutbox)
@@ -763,9 +763,5 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 --- }}}
 dofile(gears.filesystem.get_configuration_dir() .. "tag_notify.lua")
 require("tabber")
--- Spawn all the programs needed at startup
-for _,v in pairs(autostart) do
-    awful.spawn.once(v)
-end
 
 --- vim: foldmethod=marker fdl=0
