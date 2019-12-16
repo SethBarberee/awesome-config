@@ -1,3 +1,4 @@
+local awful = require("awful")
 local gears = require("gears")
 local laptop = require("utils.laptop") -- so we know if we are on a laptop
 local naughty = require("naughty")
@@ -21,14 +22,14 @@ local autostart = {}
 
 -- We got a laptop so add gestures
 function startup_apps()
-    if laptop.islaptop then
-        naughty.notification { title = "DEBUG", message = "laptop normal"}
+    if laptop.data.islaptop then
+        --naughty.notification { title = "DEBUG", message = "laptop normal"}
         apps = gears.table.join(apps, laptop_normal)
     end
 
     -- It's a touch screen so we need our touch stuff
-    if laptop.touch then
-        naughty.notification { title = "DEBUG", message = "laptop touch"}
+    if laptop.data.touch then
+        --naughty.notification { title = "DEBUG", message = "laptop touch"}
         apps = gears.table.join(apps, laptop_touch)
     end
 
@@ -38,4 +39,6 @@ function startup_apps()
     end
 end
 
-return setmetatable(autostart, { __call = function(_, ...) startup_apps() return autostart end})
+startup_apps()
+
+return autostart
