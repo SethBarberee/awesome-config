@@ -15,29 +15,33 @@ local beautiful = require("beautiful")
 local brightness = wibox.widget {
     {
         {
-            id      = 'textbox',
-            text    = "50",
-            halign  = 'center',
-            valign  = 'center',
-            widget  = wibox.widget.textbox
+            {
+                id      = 'textbox',
+                text    = "50",
+                halign  = 'center',
+                valign  = 'center',
+                widget  = wibox.widget.textbox
+            },
+            right = 2,
+            left = 2,
+            widget = wibox.container.margin,
         },
-        right = 2,
-        left = 2,
-        widget = wibox.container.margin,
+        {
+            id                  = 'bar',
+            maximum             = 100,
+            value               = 50,
+            forced_height       = 20,
+            forced_width        = 100,
+            bar_height          = 3,
+            bar_active_color    = beautiful.bg_focus,
+            bar_color           = beautiful.bg_normal,
+            handle_color        = beautiful.bg_focus,
+            widget              = wibox.widget.slider,
+        },
+        layout = wibox.layout.align.horizontal
     },
-    {
-        id                  = 'bar',
-        maximum             = 100,
-        value               = 50,
-        forced_height       = 20,
-        forced_width        = 100,
-        bar_height          = 3,
-        bar_active_color    = beautiful.bg_focus,
-        bar_color           = beautiful.bg_normal,
-        handle_color        = beautiful.bg_focus,
-        widget              = wibox.widget.slider,
-    },
-    layout = wibox.layout.align.horizontal
+    right = 5,
+    widget = wibox.container.margin
 }
 
 local sink = ""
@@ -69,8 +73,8 @@ function brightness.lower_brightness()
     update_brightness()
 end
 
-brightness.bar:connect_signal('property::value', function()
-    awful.spawn.easy_async_with_shell("xbacklight -set " .. brightness.bar.value, function()
+brightness:get_children_by_id("bar")[1]:connect_signal('property::value', function()
+    awful.spawn.easy_async_with_shell("xbacklight -set " .. brightness:get_children_by_id("bar").value, function()
         update_brightness()
     end)
 end)
