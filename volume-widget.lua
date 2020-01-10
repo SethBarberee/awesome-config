@@ -23,34 +23,38 @@ local vol_menu
 local volume = wibox.widget {
     {
         {
-            id      = 'textbox',
-            text    = "V: 50",
-            halign  = 'center',
-            valign  = 'center',
-            widget  = wibox.widget.textbox
+            {
+                id      = 'textbox',
+                text    = "V: 50",
+                halign  = 'center',
+                valign  = 'center',
+                widget  = wibox.widget.textbox
+            },
+            --id = 'margin',
+            right = 2,
+            left = 2,
+            widget = wibox.container.margin,
         },
-        --id = 'margin',
-        right = 2,
-        left = 2,
-        widget = wibox.container.margin,
+        {
+            id                  = 'bar',
+            maximum             = 100,
+            value               = 50,
+            forced_height       = 20,
+            forced_width        = 100,
+            bar_height          = 3,
+            bar_active_color    = beautiful.bg_focus,
+            bar_color           = beautiful.bg_normal,
+            handle_color        = beautiful.bg_focus,
+            widget              = wibox.widget.slider,
+        },
+        layout = wibox.layout.align.horizontal,
     },
-    {
-        id                  = 'bar',
-        maximum             = 100,
-        value               = 50,
-        forced_height       = 20,
-        forced_width        = 100,
-        bar_height          = 3,
-        bar_active_color    = beautiful.bg_focus,
-        bar_color           = beautiful.bg_normal,
-        handle_color        = beautiful.bg_focus,
-        widget              = wibox.widget.slider,
-    },
-    layout = wibox.layout.align.horizontal
+    right = 5,
+    widget = wibox.container.margin,
 }
 
 local volume_t = awful.tooltip {
-    objects = {volume.bar}, -- Attach tooltip to slider
+    objects = {volume:get_children_by_id("bar")[1]}, -- Attach tooltip to slider
     timer_function = function()
         -- TODO filter better instead of running commands twice.. but hey, it works
         awful.spawn.easy_async_with_shell("pamixer --list-sinks | cut -f 1,3- -d ' '", function(out)
@@ -104,7 +108,7 @@ function volume.mute()
 end
 
 volume:get_children_by_id("bar")[1]:connect_signal('property::value', function()
-    awful.spawn.easy_async_with_shell("pamixer --set-volume " .. volume.bar.value, function()
+    awful.spawn.easy_async_with_shell("pamixer --set-volume " .. volume:get_children_by_id("bar")[1].value, function()
         update_volume()
     end)
 end)
