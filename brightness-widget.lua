@@ -74,7 +74,7 @@ function brightness.lower_brightness()
 end
 
 brightness:get_children_by_id("bar")[1]:connect_signal('property::value', function()
-    awful.spawn.easy_async_with_shell("xbacklight -set " .. brightness:get_children_by_id("bar").value, function()
+    awful.spawn.easy_async_with_shell("xbacklight -set " .. brightness:get_children_by_id("bar")[1].value, function()
         update_brightness()
     end)
 end)
