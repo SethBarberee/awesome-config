@@ -21,7 +21,7 @@ local laptop_touch = {
 local autostart = {}
 
 -- We got a laptop so add gestures
-function startup_apps()
+function autostart.startup_apps()
     if laptop.data.islaptop then
         --naughty.notification { title = "DEBUG", message = "laptop normal"}
         apps = gears.table.join(apps, laptop_normal)
@@ -39,6 +39,7 @@ function startup_apps()
     end
 end
 
-startup_apps()
-
+gears.timer.delayed_call(function()
+    autostart.startup_apps()
+end)
 return autostart
