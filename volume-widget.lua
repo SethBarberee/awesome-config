@@ -14,6 +14,7 @@ local beautiful = require("beautiful")
 
 local muted = false -- Keep track of mute
 local sink = ""
+local shown = false
 
 local volume_menu = {}
 local table_len = 0 -- keep track of table length
@@ -124,17 +125,21 @@ volume:get_children_by_id("textbox")[1]:connect_signal('mouse::enter', function(
             local cmd = "pactl set-default-sink " .. index
             table.insert(volume_items,  {string, function() awful.spawn(cmd) end} )
         end
-        vol_menu = awful.menu(volume_items)
-        -- Start a timer to autoclose the menu
-        gears.timer {
-            timeout = 4,
-            autostart = true,
-            single_shot = true,
-            callback = function()
-                vol_menu:hide()
-            end
-        }
-        vol_menu:show()
+        if shown == false then
+            vol_menu = awful.menu(volume_items)
+            shown = true
+            -- Start a timer to autoclose the menu
+            gears.timer {
+                timeout = 4,
+                autostart = true,
+                single_shot = true,
+                callback = function()
+                    vol_menu:hide()
+                    shown = false
+                end
+            }
+            vol_menu:show()
+        end
     end
 end)
 
