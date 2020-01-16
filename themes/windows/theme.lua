@@ -11,6 +11,7 @@ local themes_path = gfs.get_themes_dir()
 local awful = require('awful')
 local wibox = require('wibox')
 local gears = require('gears')
+local naughty = require("naughty")
 
 -- TODO find way to load from ~/.cache and not by symlinking to awesome
 -- directory
@@ -39,6 +40,9 @@ theme.border_width  = dpi(1)
 theme.border_normal = theme.bg_normal
 theme.border_focus  = theme.bg_focus
 theme.border_marked = "#91231c"
+theme.maximized_hide_border = true
+theme.fullscreen_hide_border = true
+
 -- }}}
 -- There are other variable sets
 -- overriding the default one when
@@ -189,15 +193,7 @@ search_box:buttons(awful.util.table.join(awful.button({}, 1, function () awful.s
 ---{{{ Tasklist buttons 
 local tasklist_buttons = {
     awful.button({ }, 1, function (c)
-        if c == client.focus then
-            c.minimized = true
-        else
-            c:emit_signal(
-            "request::activate",
-            "tasklist",
-            {raise = true}
-            )
-        end
+        c:activate { context = "tasklist", action = "toggle_minimization" }
     end),
     awful.button({ }, 3, function()
         awful.menu.client_list({ theme = { width = 250 } })
@@ -269,6 +265,11 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     end,
                 })
                 self:get_children_by_id('clienticon')[1].client = c
+            end,
+            update_callback = function(self, c, index, objects) 
+                -- TODO use this to count and combine
+                -- TODO somehow will use multiple backgrounds
+                    --naughty.notification { title = "DEBUG", message = "" .. index .. ": " .. c.class}
             end,
         },
     }

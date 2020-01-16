@@ -22,10 +22,6 @@ local battery = require("awesome-upower-battery")
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
 
-local autostart = require("autostart") -- my autostart programs
-local tagadder = require("tagadder") -- tag manipulation widget
-local laptop = require("utils.laptop")
-
 -- }}}
 
 -- {{{ Error handling
@@ -58,6 +54,15 @@ do
 end
 -- }}}
 
+-- {{{ User Modules
+-- Waiting to now to require so I can get the startup errors
+
+local autostart = require("autostart") -- my autostart programs
+local tagadder = require("tagadder") -- tag manipulation widget
+local laptop = require("utils.laptop")
+
+-- }}}
+
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/windows/theme.lua")
@@ -77,24 +82,23 @@ editor_cmd = terminal .. " -e " .. editor
 modkey = "Mod4"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
-awful.layout.layouts = {
-    awful.layout.suit.floating,
-    awful.layout.suit.tile,
-    awful.layout.suit.tile.left,
-    awful.layout.suit.tile.bottom,
-    awful.layout.suit.tile.top,
-    awful.layout.suit.fair,
-    awful.layout.suit.fair.horizontal,
-    awful.layout.suit.spiral,
-    awful.layout.suit.spiral.dwindle,
-    awful.layout.suit.max,
-    awful.layout.suit.max.fullscreen,
-    awful.layout.suit.magnifier,
-    awful.layout.suit.corner.nw,
-    -- awful.layout.suit.corner.ne,
-    -- awful.layout.suit.corner.sw,
-    -- awful.layout.suit.corner.se,
-}
+tag.connect_signal("request::default_layouts", function()
+    awful.layout.append_default_layouts({
+        awful.layout.suit.floating,
+        awful.layout.suit.tile,
+        awful.layout.suit.tile.left,
+        awful.layout.suit.tile.bottom,
+        awful.layout.suit.tile.top,
+        awful.layout.suit.fair,
+        awful.layout.suit.fair.horizontal,
+        awful.layout.suit.spiral,
+        awful.layout.suit.spiral.dwindle,
+        awful.layout.suit.max,
+        awful.layout.suit.max.fullscreen,
+        awful.layout.suit.magnifier,
+        awful.layout.suit.corner.nw,
+    })
+end)
 -- }}}
 
 -- {{{ Menu
@@ -426,9 +430,7 @@ awful.keyboard.append_global_keybindings({
                   local c = awful.client.restore()
                   -- Focus restored client
                   if c then
-                    c:emit_signal(
-                        "request::activate", "key.unminimize", {raise = true}
-                    )
+                      c:activate { raise = true, context = "key.unminimize" }
                   end
               end,
               {description = "restore minimized", group = "client"}),
@@ -596,16 +598,14 @@ client.connect_signal("request::default_mousebindings", function()
     awful.mouse.append_client_mousebindings({
         awful.button({ }, 1, function (c)
             if c.name ~= "CellWriter" and c.name ~= "Onboard" then
-                c:emit_signal("request::activate", "mouse_click", {raise = true})
+                c:activate { context = "mouse_click" }
             end
         end),
         awful.button({ modkey }, 1, function (c)
-            c:emit_signal("request::activate", "mouse_click", {raise = true})
-            awful.mouse.client.move(c)
+            c:activate { context = "mouse_click", action = "mouse_move"  }
         end),
         awful.button({ modkey }, 3, function (c)
-            c:emit_signal("request::activate", "mouse_click", {raise = true})
-            awful.mouse.client.resize(c)
+            c:activate { context = "mouse_click", action = "mouse_resize"}
         end),
     })
 end)
@@ -616,9 +616,7 @@ end)
 awful.rules.rules = {
     -- All clients will match this rule.
     { rule = { },
-      properties = { border_width = beautiful.border_width,
-                     border_color = beautiful.border_normal,
-                     focus = awful.client.focus.filter,
+      properties = { focus = awful.client.focus.filter,
                      raise = true,
                      screen = awful.screen.preferred,
                      placement = awful.placement.no_overlap+awful.placement.no_offscreen
@@ -648,6 +646,7 @@ awful.rules.rules = {
         -- and the name shown there might not match defined rules here.
         name = {
           "Event Tester",  -- xev.
+          "Picture-in-Picture",
         },
         role = {
           "AlarmWindow",  -- Thunderbird's calendar.
@@ -675,19 +674,21 @@ awful.rules.rules = {
             maximized_horizontal = true
         }
     },
+    { rule_any = 
+        { class = {"Minecraft Launcher" } ,
+          instance = { "Minecraft Launcher" },
+        },
+        properties = {
+            maximized_vertical = true,
+            maximized_horizontal = true,
+        }
+    }
 }
 -- }}}
 
 -- {{{ Signals
 -- Signal function to execute when a new client appears.
-client.connect_signal("manage", function (c)
-
-    if awesome.startup
-      and not c.size_hints.user_position
-      and not c.size_hints.program_position then
-        -- Prevent clients from being unreachable after screen count changes.
-        awful.placement.no_offscreen(c)
-    end
+client.connect_signal("request::manage", function (c)
 
     if not awesome.startup then
         -- Set as slave instead of master
@@ -712,12 +713,10 @@ client.connect_signal("request::titlebars", function(c)
     -- buttons for the titlebar
     local buttons = {
         awful.button({ }, 1, function()
-            c:emit_signal("request::activate", "titlebar", {raise = true})
-            awful.mouse.client.move(c)
+            c:activate { context = "titlebar", action = "mouse_move"  }
         end),
         awful.button({ }, 3, function()
-            c:emit_signal("request::activate", "titlebar", {raise = true})
-            awful.mouse.client.resize(c)
+            c:activate { context = "titlebar", action = "mouse_resize"}
         end),
     }
 
@@ -749,19 +748,13 @@ client.connect_signal("request::titlebars", function(c)
     }
 end)
 --- }}}
---- {{{ Sloppy focus rules
--- Enable sloppy focus, so that focus follows mouse.
-client.connect_signal("mouse::enter", function(c)
-    if c.name ~= "CellWriter" and c.name ~= "Onboard" then
-        c:emit_signal("request::activate", "mouse_enter", {raise = false})
-    end
-end)
---- }}}
---- {{{ Border focus setup
-client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
-client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
---- }}}
 dofile(gears.filesystem.get_configuration_dir() .. "tag_notify.lua")
 require("tabber")
+
+--- {{{ Special Focus Rules
+awful.permissions.add_activate_filter(function(c)
+    if c.class == "Onboard" then return false end
+end)
+--- }}}
 
 --- vim: foldmethod=marker fdl=0
