@@ -662,16 +662,18 @@ awful.rules.rules = {
     { rule_any = {type = { "normal", "dialog" }
       }, properties = { titlebars_enabled = true }
     },
-
-    -- Set Firefox to always map on the tag named "2" on screen 1.
-    -- { rule = { class = "Firefox" },
-    --   properties = { screen = 1, tag = "2" } },
     { rule = { class = "glava" },
         properties = {
             titlebars_enabled = false,
             border_width = 0,
             maximized_vertical = true,
             maximized_horizontal = true
+        }
+    },
+    -- Float Picture-In-Picture bc I want my anime floating
+    { rule = { name = "Picture-in-Picture" },
+        properties = {
+           ontop = true 
         }
     },
     { rule_any = 
