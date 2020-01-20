@@ -665,6 +665,10 @@ ruled.client.connect_signal("request::rules", function()
                 "Picture-in-Picture"
             }
         },
+        properties = {
+            floating = true,
+            ontop = true
+        }
     }
 
     -- Minecraft
@@ -680,6 +684,9 @@ ruled.client.connect_signal("request::rules", function()
             instance = {
                 "Minecraft Launcher"
             }
+        },
+        properties = {
+            maximized = true
         }
     }
 end)
