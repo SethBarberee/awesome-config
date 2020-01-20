@@ -40,6 +40,7 @@ local popup = awful.popup {
     x = awful.screen.focused().geometry.height / 2 + dpi(300),
     y = (awful.screen.focused().geometry.width / 2) - (dpi(1000) / 2),
     shape = gears.shape.rounded_rect,
+    screen = awful.screen.focused(),
     type = "dock",
     ontop = true,
     visible = false,
@@ -47,7 +48,7 @@ local popup = awful.popup {
 
 local timer_die = gears.timer { timeout = 1.5 }
 
-local function show(layout_name)
+local function show(layout_name, screen)
     if timer_die.started then
         timer_die:again()
     else
@@ -55,6 +56,7 @@ local function show(layout_name)
     end
     text_tag:set_markup(layout_name)
     icon.image = beautiful["layout_" .. layout_name]
+    popup.screen = screen
     popup.visible = true
 end
 
@@ -77,7 +79,7 @@ awful.tag.attached_connect_signal(s, "property::layout", function ()
         if l then
             local name = awful.layout.getname(l)
             -- Show nice popup with layout name and icon
-            show(name)
+            show(name, s)
         end
     end
 end)
