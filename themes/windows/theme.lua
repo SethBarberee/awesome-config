@@ -149,6 +149,11 @@ theme.layout_cornersw = themes_path.."default/layouts/cornersww.png"
 theme.layout_cornerse = themes_path.."default/layouts/cornersew.png"
 -- }}}
 
+-- {{{ Calendar Popup settings
+theme.calendar_normal_border_color = theme.bg_focus
+theme.calendar_header_border_color = theme.bg_focus
+theme.calendar_weekday_border_color = theme.bg_focus
+--- }}}
 -- Generate Awesome icon:
 theme.awesome_icon = theme_assets.awesome_icon(
     theme.menu_height, theme.bg_focus, theme.fg_focus
@@ -177,8 +182,8 @@ local search_box = wibox.widget {
                 search_text,
                 layout = wibox.layout.fixed.horizontal,
             },
-            left = 10,
-            right = 10,
+            left = dpi(10),
+            right = dpi(10),
             widget = wibox.container.margin,
         },
         bg = theme.border_focus,
@@ -210,7 +215,7 @@ local tasklist_buttons = {
 screen.connect_signal("request::desktop_decoration", function(s)
     notif_wb = awful.wibar {
         position = 'bottom',
-        height   = 48,
+        height   = dpi(48),
         type = 'dock',
         bg = 'transparent',
         screen = s,
@@ -224,9 +229,9 @@ screen.connect_signal("request::desktop_decoration", function(s)
         layout   = {
             spacing_widget = {
                 {
-                    forced_width  = 5,
-                    forced_height = 24,
-                    thickness     = 1,
+                    forced_width  = dpi(5),
+                    forced_height = dpi(24),
+                    thickness     = dpi(1),
                     color         = '#777777',
                     widget        = wibox.widget.separator
                 },
@@ -234,7 +239,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                 halign = 'center',
                 widget = wibox.container.place,
             },
-            spacing = 1,
+            spacing = dpi(1),
             layout  = wibox.layout.fixed.horizontal
         },
         -- Notice that there is *NO* wibox.wibox prefix, it is a template,
@@ -242,7 +247,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
         widget_template = {
             {
                 wibox.widget.base.make_widget(),
-                forced_height = 5,
+                forced_height = dpi(5),
                 id            = 'background_role',
                 widget        = wibox.container.background,
             },
@@ -251,7 +256,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     id = 'clienticon',
                     widget = awful.widget.clienticon,
                 },
-                margins = 5,
+                margins = dpi(5),
                 widget  = wibox.container.margin
             },
             nil,
