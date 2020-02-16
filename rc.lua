@@ -1,3 +1,4 @@
+-- awesome_mode: api-level=4:screen=on
 -- If LuaRocks is installed, make sure that packages installed through it are
 -- found (e.g. lgi). If LuaRocks is not installed, do nothing.
 pcall(require, "luarocks.loader")
@@ -15,7 +16,6 @@ local beautiful = require("beautiful")
 local naughty = require("naughty")
 local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup")
-
 local revelation = require("revelation")
 local battery = require("awesome-upower-battery")
 -- }}}
@@ -56,7 +56,6 @@ end
 local autostart = require("autostart") -- my autostart programs
 local tagadder = require("tagadder") -- tag manipulation widget
 local laptop = require("utils.laptop")
-
 -- }}}
 
 -- {{{ Variable definitions
@@ -120,8 +119,8 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- }}}
 
 -- {{{ Widgets/Wibar
-local volume = require("volume-widget") -- custom volume widget
-local brightness = require("brightness-widget") -- custom volume widget
+volume = require("volume-widget") -- custom volume widget
+brightness = require("brightness-widget") -- custom volume widget
 
 -- Create battery widget
 -- TODO Add icon
@@ -340,8 +339,6 @@ screen.connect_signal("request::desktop_decoration", function(s)
 end)
 -- }}}
 
-
-
 -- {{{ Signals
 -- Signal function to execute when a new client appears.
 client.connect_signal("request::manage", function (c)
@@ -417,6 +414,13 @@ require("mousebindings")
 awful.permissions.add_activate_filter(function(c)
     if c.class == "Onboard" then return false end
 end)
+
+-- From #2982
+-- Enable sloppy focus, so that focus follows mouse.
+client.connect_signal("mouse::enter", function(c)
+    c:activate { context = "mouse_enter", raise = false }
+end)
+
 --- }}}
 
 --- vim: foldmethod=marker fdl=0
