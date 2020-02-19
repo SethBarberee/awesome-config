@@ -4,6 +4,7 @@ local beautiful = require("beautiful")
 
 local search_text = wibox.widget.textbox()
 search_text.text = 'Search'
+
 local search_box = wibox.widget {
     {
         {

@@ -5,7 +5,7 @@ local gears = require("gears")
 local function rename_tag()
     awful.prompt.run {
         prompt       = "Rename tag to: ",
-        textbox      = awful.screen.focused().mypromptbox.widget,
+        textbox      = mouse.screen.mypromptbox.widget,
         exe_callback = function(new_name)
             if not new_name or #new_name == 0 then return end
 
@@ -20,7 +20,7 @@ end
 local function add_tag()
     awful.prompt.run {
         prompt       = "New tag name: ",
-        textbox      = awful.screen.focused().mypromptbox.widget,
+        textbox      = mouse.screen.mypromptbox.widget,
         exe_callback = function(new_name)
             if not new_name or #new_name == 0 then return end
             awful.tag.add(new_name, {
@@ -33,7 +33,7 @@ end
 local function delete_tag()
     awful.prompt.run {
         prompt       = "Deleting tag: ",
-        textbox      = awful.screen.focused().mypromptbox.widget,
+        textbox      = mouse.screen.mypromptbox.widget,
         exe_callback = function(new_name)
             if not new_name or #new_name == 0 then return end
                 local t = awful.tag.find_by_name(awful.screen.focused(), new_name)

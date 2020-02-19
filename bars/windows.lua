@@ -2,12 +2,14 @@ local awful = require("awful")
 local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
+local xresources = require("beautiful.xresources")
+local dpi = xresources.apply_dpi
 
 -- {{{ Widgets/Wibar
-volume = require("volume-widget") -- custom volume widget
-brightness = require("brightness-widget") -- custom volume widget
+volume = require("widgets.volume") -- custom volume widget
+brightness = require("widgets.brightness") -- custom volume widget
 local battery = require("awesome-upower-battery")
-local tagadder = require("tagadder") -- tag manipulation widget
+local tagadder = require("widgets.tagadder") -- tag manipulation widget
 local laptop = require("utils.laptop")
 
 -- Create battery widget
@@ -226,3 +228,147 @@ screen.connect_signal("request::desktop_decoration", function(s)
     --- }}}
 end)
 -- }}}
+
+--- {{{ Search box widget
+-- TODO migrate to seperate file widget
+local search_text = wibox.widget.textbox()
+search_text.text = 'Search'
+local search_image = wibox.widget {
+    {
+        image = beautiful.awesome_icon, -- TODO change this
+        widget = wibox.widget.imagebox
+    },
+    margins = 10,
+    widget = wibox.container.margin,
+}
+local search_box = wibox.widget {
+    {
+        {
+            {
+                search_image,
+                search_text,
+                layout = wibox.layout.fixed.horizontal,
+            },
+            left = dpi(10),
+            right = dpi(10),
+            widget = wibox.container.margin,
+        },
+        bg = beautiful.border_focus,
+        fg = beautiful.fg_focus,
+        widget = wibox.container.background,
+    },
+    layout = wibox.layout.fixed.horizontal,
+}
+-- Lets me left click to pull up rofi
+search_box:buttons(awful.util.table.join(awful.button({}, 1, function () awful.spawn('rofi -combi-modi window,drun,run -show combi -modi combi') end)))
+--- }}}
+---{{{ Tasklist buttons 
+local tasklist_buttons = {
+    awful.button({ }, 1, function (c)
+        c:activate { context = "tasklist", action = "toggle_minimization" }
+    end),
+    awful.button({ }, 3, function()
+        awful.menu.client_list({ beautiful = { width = 250 } })
+    end),
+    awful.button({ }, 4, function ()
+        awful.client.focus.byidx(1)
+    end),
+    awful.button({ }, 5, function ()
+        awful.client.focus.byidx(-1)
+    end)
+}
+--- }}} 
+--- {{{ Widget bar setup
+screen.connect_signal("request::desktop_decoration", function(s)
+    notif_wb = awful.wibar {
+        position = 'bottom',
+        height   = dpi(48),
+        type = 'dock',
+        bg = 'transparent',
+        screen = s,
+    }
+
+    -- {{{ Tasklist wibar
+    local mytasklist = awful.widget.tasklist {
+        screen   = s,
+        filter   = awful.widget.tasklist.filter.currenttags,
+        buttons  = tasklist_buttons,
+        layout   = {
+            spacing_widget = {
+                {
+                    forced_width  = dpi(5),
+                    forced_height = dpi(24),
+                    thickness     = dpi(1),
+                    color         = '#777777',
+                    widget        = wibox.widget.separator
+                },
+                valign = 'center',
+                halign = 'center',
+                widget = wibox.container.place,
+            },
+            spacing = dpi(1),
+            layout  = wibox.layout.fixed.horizontal
+        },
+        -- Notice that there is *NO* wibox.wibox prefix, it is a template,
+        -- not a widget instance.
+        widget_template = {
+            {
+                wibox.widget.base.make_widget(),
+                forced_height = dpi(5),
+                id            = 'background_role',
+                widget        = wibox.container.background,
+            },
+            {
+                {
+                    id = 'clienticon',
+                    widget = awful.widget.clienticon,
+                },
+                margins = dpi(5),
+                widget  = wibox.container.margin
+            },
+            nil,
+            layout = wibox.layout.align.vertical,
+            -- TODO is there a click callback???
+            create_callback = function(self, c, index, objects) 
+                local tooltip = awful.tooltip({
+                    objects = { self },
+                    timer_function = function()
+                        return c.name
+                    end,
+                })
+                self:get_children_by_id('clienticon')[1].client = c
+            end,
+            update_callback = function(self, c, index, objects) 
+                -- TODO use this to count and combine
+                -- TODO somehow will use multiple backgrounds
+                    --naughty.notification { title = "DEBUG", message = "" .. index .. ": " .. c.class}
+            end,
+        },
+    }
+
+    --- {{{ Wibar setup
+    local left_layout = wibox.layout.fixed.horizontal()
+    left_layout:add(search_box)
+
+    local layout = wibox.widget {
+        {
+            left_layout,
+            {
+                mytasklist,
+                content_fill_horizontal = true,
+                widget = wibox.container.place,
+            },
+            wibox.widget.systray(),
+            layout = wibox.layout.align.horizontal,
+        },
+        top = beautiful.border_width,
+        color = beautiful.border_focus,
+        widget = wibox.container.margin,
+    }
+    notif_wb:set_widget(layout)
+    --- }}}
+end)
+--- }}}
+-- }}}
+
+-- vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:textwidth=80:foldmethod=marker:fdl=0
