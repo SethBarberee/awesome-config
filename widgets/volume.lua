@@ -123,7 +123,7 @@ volume:get_children_by_id("textbox")[1]:connect_signal('mouse::enter', function(
             local index = tonumber(k) - 1 -- counteract our padding earlier of the index
             local string = "Sink " .. index
             local cmd = "pactl set-default-sink " .. index
-            table.insert(volume_items,  {string, function() awful.spawn(cmd) end} )
+            table.insert(volume_items,  {string, function() awful.spawn(cmd) update_volume() end} )
         end
         if shown == false then
             vol_menu = awful.menu(volume_items)
