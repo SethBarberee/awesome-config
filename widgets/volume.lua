@@ -79,11 +79,9 @@ local volume_t = awful.tooltip {
 local function update_volume()
     awful.spawn.easy_async_with_shell("pamixer --get-volume-human", function(stdout)
         if not string.match(stdout, 'muted') then
-            -- TODO move to parse number from previous output to save on another shell call
-            awful.spawn.easy_async_with_shell("pamixer --get-volume", function(volume_out)
-                volume:get_children_by_id("textbox")[1].text = "V: " .. volume_out
-                volume:get_children_by_id("bar")[1].value    = tonumber(volume_out)
-            end)
+            local volume_out = stdout:gsub('%%', '') -- remove percentage
+            volume:get_children_by_id("textbox")[1].text = "V: " .. volume_out
+            volume:get_children_by_id("bar")[1].value    = tonumber(volume_out)
             muted = false
         else
             muted               = true
