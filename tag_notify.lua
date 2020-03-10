@@ -27,26 +27,30 @@ local text_tag = wibox.widget {
     widget = wibox.widget.textbox,
 }
 
-local popup = awful.popup {
-    widget = wibox.widget {
-        {
-            icon,
-            text_tag,
-            layout = wibox.layout.fixed.vertical,
+local popup_table = setmetatable({}, {__mode="k"}) 
+
+awful.screen.connect_for_each_screen(function(s)
+    popup_table[s.index] = awful.popup {
+        widget = wibox.widget {
+            {
+                icon,
+                text_tag,
+                layout = wibox.layout.fixed.vertical,
+            },
+            margins = dpi(10),
+            widget = wibox.container.margin,
         },
-        margins = dpi(10),
-        widget = wibox.container.margin,
-    },
-    x = awful.screen.focused().geometry.height / 2 + dpi(300),
-    y = (awful.screen.focused().geometry.width / 2) - (dpi(1000) / 2),
-    shape = gears.shape.rounded_rect,
-    screen = awful.screen.focused(),
-    type = "dock",
-    ontop = true,
-    visible = false,
-}
+        placement = awful.placement.centered,
+        shape = gears.shape.rounded_rect,
+        screen = awful.screen.focused(),
+        type = "dock",
+        ontop = true,
+        visible = false,
+    }
+end)
 
 local timer_die = gears.timer { timeout = 1.5 }
+local current_screen = nil
 
 local function show(layout_name, screen)
     if timer_die.started then
@@ -54,15 +58,15 @@ local function show(layout_name, screen)
     else
         timer_die:start()
     end
+    current_screen = screen
     text_tag:set_markup(layout_name)
     icon.image = beautiful["layout_" .. layout_name]
-    popup.screen = screen
-    popup.visible = true
+    popup_table[screen].visible = true
 end
 
 -- Destroy popup on timeout from the timer
 timer_die:connect_signal("timeout", function()
-    popup.visible = false
+    popup_table[current_screen].visible = false
     if timer_die.started then
         timer_die:stop()
     end
@@ -79,7 +83,8 @@ awful.tag.attached_connect_signal(s, "property::layout", function ()
         if l then
             local name = awful.layout.getname(l)
             -- Show nice popup with layout name and icon
-            show(name, s)
+            local current_screen = mouse.screen
+            show(name, current_screen.index)
         end
     end
 end)
@@ -91,6 +96,7 @@ awful.tag.attached_connect_signal(s, "property::urgent", function (t)
         -- iterate over the table and determine what is urgent
         if v.urgent then
             naughty.notification { title = "Urgent client:", message = v.instance .. ": " .. v.name}
+            -- TODO switch to urgent client
         end
     end
 end)
