@@ -1,6 +1,7 @@
 local awful = require('awful')
 local wibox = require("wibox")
 local gears = require("gears")
+local beautiful = require("beautiful")
 
 local spotify_widget = {}
 
@@ -28,44 +29,52 @@ local spotify_info = wibox.widget {
             widget = wibox.widget.imagebox
         },
         {
-            -- TODO maybe add a separator
             {
-                text = " Now Playing",
-                widget = wibox.widget.textbox
+                -- TODO maybe add a separator
+                {
+                    text = " Now Playing",
+                    widget = wibox.widget.textbox
+                },
+                {
+                    id = "artist",
+                    text = "hello",
+                    widget = wibox.widget.textbox
+                },
+                {
+                    id = "song",
+                    text = "hello",
+                    widget = wibox.widget.textbox
+                },
+                layout = wibox.layout.flex.vertical,  
             },
-            {
-                id = "artist",
-                text = "hello",
-                widget = wibox.widget.textbox
-            },
-            {
-                id = "song",
-                text = "hello",
-                widget = wibox.widget.textbox
-            },
-            layout = wibox.layout.flex.vertical,  
+            right = 5,
+            widget = wibox.container.margin
         },
         layout = wibox.layout.align.horizontal
     },
     {
-        -- Textboxes that act as butons
         {
-            id = "prev",
-            text = "Prev",
-            widget = wibox.widget.textbox
+            -- Textboxes that act as butons
+            {
+                id = "prev",
+                text = "Prev",
+                widget = wibox.widget.textbox
+            },
+            {
+                id = "play",
+                text = "Toggle",
+                widget = wibox.widget.textbox
+            },
+            {
+                id = "next",
+                text = "Next",
+                widget = wibox.widget.textbox
+            },
+            expand = "none",
+            layout = wibox.layout.align.horizontal,
         },
-        {
-            id = "play",
-            text = "Toggle",
-            widget = wibox.widget.textbox
-        },
-        {
-            id = "next",
-            text = "Next",
-            widget = wibox.widget.textbox
-        },
-        expand = "none",
-        layout = wibox.layout.align.horizontal,
+        margins = 5,
+        widget = wibox.container.margin
     },
     layout = wibox.layout.align.vertical
 }
@@ -73,6 +82,8 @@ local spotify_info = wibox.widget {
 -- TODO mess with placement to put below player status instead of top right
 local spotify_popup = awful.popup {
     widget = spotify_info,
+    bg = beautiful.bg_focus,
+    fg = "#ffffff",
     placement = awful.placement.top_right,
     shape = gears.shape.rounded_rect,
     visible = false,
