@@ -2,6 +2,7 @@ local beautiful = require("beautiful")
 local naughty = require("naughty")
 local ruled = require("ruled")
 local awful = require("awful")
+local menubar = require("menubar")
 
 ruled.notification.connect_signal("request::rules", function()
     -- All notifications will match this rule.
@@ -54,4 +55,21 @@ end)
 
 naughty.connect_signal("request::display", function(n)
     naughty.layout.box { notification = n }
+end)
+
+naughty.connect_signal("request::action_icon", function(a, context, hints)
+    -- use the XDG icon
+     a.icon = menubar.utils.lookup_icon(hints.id)
+end)
+
+naughty.connect_signal("request::icon", function(n, context, hints)
+    if context ~= "app_icon" then return end
+
+    local path = menubar.utils.lookup_icon(hints.app_icon) or
+        -- use the XDG icon
+        menubar.utils.lookup_icon(hints.app_icon:lower())
+
+    if path then
+        n.icon = path
+    end
 end)
