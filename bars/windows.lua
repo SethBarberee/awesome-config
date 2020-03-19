@@ -6,10 +6,11 @@ local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
 
 -- {{{ Widgets/Wibar
-volume = require("widgets.volume") -- custom volume widget
-brightness = require("widgets.brightness") -- custom volume widget
+local volume = require("widgets.volume") -- custom volume widget
+local brightness = require("widgets.brightness") -- custom volume widget
 local battery = require("awesome-upower-battery")
 local tagadder = require("widgets.tagadder") -- tag manipulation widget
+local spotify = require("widgets.spotify")
 local laptop = require("utils.laptop")
 
 -- Create battery widget
@@ -40,7 +41,7 @@ screen.connect_signal("request::wallpaper", function(s)
     end
 end)
 
-screen_table = {} -- table of all my monitors
+local screen_table = {} -- table of all my monitors
 
 screen.connect_signal("request::desktop_decoration", function(s)
 
@@ -106,7 +107,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
           left = 3,
           right = 3,
           layout = wibox.container.margin,
-          create_callback = function(self, t, index, objects)
+          create_callback = function(self, t, index, objects) --luacheck: no unused args
             local col = t.selected and beautiful.border_focus or beautiful.bg_normal
             local current_tag = self:get_children_by_id("current_tag")[1]
 
@@ -117,7 +118,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
               end
             )
           end,
-          update_callback = function(self, t, index, objects)
+          update_callback = function(self, t, index, objects) --luacheck: no unused args 
             local col = t.selected and beautiful.border_focus or beautiful.bg_normal
             self:get_children_by_id("current_tag")[1].color = col
           end
@@ -147,6 +148,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
         s.mypromptbox,
     }
     local right_layout = wibox.layout {
+        spotify,
         layout = wibox.layout.fixed.horizontal
     }
     if laptop.data.islaptop then
@@ -259,9 +261,14 @@ local search_box = wibox.widget {
     layout = wibox.layout.fixed.horizontal,
 }
 -- Lets me left click to pull up rofi
-search_box:buttons(awful.util.table.join(awful.button({}, 1, function () awful.spawn('rofi -combi-modi window,drun,run -show combi -modi combi') end)))
+search_box:buttons(awful.util.table.join(
+    awful.button({}, 1, function () 
+        awful.spawn('rofi -combi-modi window,drun,run -show combi -modi combi') 
+    end)
+    )
+)
 --- }}}
----{{{ Tasklist buttons 
+---{{{ Tasklist buttons
 local tasklist_buttons = {
     awful.button({ }, 1, function (c)
         c:activate { context = "tasklist", action = "toggle_minimization" }
@@ -279,7 +286,7 @@ local tasklist_buttons = {
 --- }}} 
 --- {{{ Widget bar setup
 screen.connect_signal("request::desktop_decoration", function(s)
-    notif_wb = awful.wibar {
+    local notif_wb = awful.wibar {
         position = 'bottom',
         height   = dpi(48),
         type = 'dock',
@@ -328,7 +335,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
             nil,
             layout = wibox.layout.align.vertical,
             -- TODO is there a click callback???
-            create_callback = function(self, c, index, objects) 
+            create_callback = function(self, c, index, objects) --luacheck: no unused args
                 local tooltip = awful.tooltip({
                     objects = { self },
                     timer_function = function()
@@ -337,7 +344,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                 })
                 self:get_children_by_id('clienticon')[1].client = c
             end,
-            update_callback = function(self, c, index, objects) 
+            update_callback = function(self, c, index, objects) --luacheck: no unused args
                 -- TODO use this to count and combine
                 -- TODO somehow will use multiple backgrounds
                     --naughty.notification { title = "DEBUG", message = "" .. index .. ": " .. c.class}
