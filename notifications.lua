@@ -26,26 +26,6 @@ ruled.notification.connect_signal("request::rules", function()
             border_width = beautiful.notification_border_width,
         }
     }
-
-    ruled.notification.append_rule {
-        rule       = { app_name = 'Spotify' },
-        properties = { 
-            append_actions = {
-                naughty.action {
-                    name = "Back",
-                    selected = false
-                },
-                naughty.action {
-                    name = "Play/Pause",
-                    selected = false
-                },
-                naughty.action {
-                    name = "Next",
-                    selected = false
-                },
-            }
-        }
-    }
 end)
 
 -- TODO how do I make this work to skip songs for spotify

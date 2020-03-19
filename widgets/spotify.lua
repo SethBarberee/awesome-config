@@ -1,7 +1,15 @@
+------------------------------------------------------
+-- Spotify widget that displays cover, title, artist
+-- in a popup. I have a custom notification rule
+-- that disables notifications and uses the popup 
+-- which has media controls
+------------------------------------------------------
+
 local awful = require('awful')
 local wibox = require("wibox")
 local gears = require("gears")
 local beautiful = require("beautiful")
+local ruled = require("ruled")
 
 local spotify_widget = {}
 
@@ -104,30 +112,6 @@ local spotify_widget = wibox.widget {
 }
 
 --------------------------------------------------------
---               signal Setup                         --
---------------------------------------------------------
-
-spotify_info:get_children_by_id('prev')[1]:connect_signal('button::press', function()
-    awful.spawn.with_shell(action["prev"]) 
-end)
-
-spotify_info:get_children_by_id('play')[1]:connect_signal('button::press', function()
-    awful.spawn.with_shell(action["toggle"]) 
-end)
-
-spotify_info:get_children_by_id('next')[1]:connect_signal('button::press', function()
-    awful.spawn.with_shell(action["next"]) 
-end)
-
-spotify_widget:connect_signal('mouse::enter', function()
-    spotify_popup.visible = true 
-end)
-
-spotify_popup:connect_signal('mouse::leave', function()
-    spotify_popup.visible = false 
-end)
-
---------------------------------------------------------
 --               Helper Function                      --
 --------------------------------------------------------
 
@@ -161,12 +145,57 @@ local function update_metadata()
    end)
 end
 
+--------------------------------------------------------
+--               signal Setup                         --
+--------------------------------------------------------
+
+spotify_info:get_children_by_id('prev')[1]:connect_signal('button::press', function()
+    awful.spawn.with_shell(action["prev"]) 
+end)
+
+spotify_info:get_children_by_id('play')[1]:connect_signal('button::press', function()
+    awful.spawn.with_shell(action["toggle"]) 
+end)
+
+spotify_info:get_children_by_id('next')[1]:connect_signal('button::press', function()
+    awful.spawn.with_shell(action["next"]) 
+    update_metadata() -- force update widget
+end)
+
+spotify_widget:connect_signal('mouse::enter', function()
+    spotify_popup.visible = true 
+end)
+
+spotify_popup:connect_signal('mouse::leave', function()
+    spotify_popup.visible = false 
+end)
+
 gears.timer {
     timeout = 2,
     autostart = true,
     callback = function ()
         update_metadata()
     end
+}
+
+-- We're gonna have some fun with the notification rules by disabling 
+-- AwesomeWM's notification for Spotify and using our popup
+ruled.notification.append_rule {
+    rule       = { app_name = 'Spotify' },
+    properties = { 
+        widget_template = {}, -- Disable our notifications and use the popup
+        callback = function() 
+            spotify_popup.visible = true 
+            gears.timer {
+                timeout = 3,
+                autostart = true,
+                single_shot = true,
+                callback = function ()
+                    spotify_popup.visible = false
+                end
+            } 
+        end,
+    }
 }
 
 return spotify_widget
