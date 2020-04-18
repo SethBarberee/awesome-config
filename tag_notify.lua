@@ -27,7 +27,7 @@ local text_tag = wibox.widget {
     widget = wibox.widget.textbox,
 }
 
-local popup_table = setmetatable({}, {__mode="k"}) 
+local popup_table = setmetatable({}, {__mode="k"})
 
 awful.screen.connect_for_each_screen(function(s)
     popup_table[s.index] = awful.popup {
@@ -42,7 +42,7 @@ awful.screen.connect_for_each_screen(function(s)
         },
         placement = awful.placement.centered,
         shape = gears.shape.rounded_rect,
-        screen = awful.screen.focused(),
+        screen = s,
         type = "dock",
         ontop = true,
         visible = false,
@@ -83,8 +83,8 @@ awful.tag.attached_connect_signal(s, "property::layout", function ()
         if l then
             local name = awful.layout.getname(l)
             -- Show nice popup with layout name and icon
-            local current_screen = mouse.screen
-            show(name, current_screen.index)
+            local focus_screen = awful.screen.focused()
+            show(name, focus_screen.index)
         end
     end
 end)
