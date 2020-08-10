@@ -11,6 +11,7 @@ local brightness = require("widgets.brightness") -- custom volume widget
 local battery = require("awesome-upower-battery")
 local tagadder = require("widgets.tagadder") -- tag manipulation widget
 local spotify = require("widgets.spotify")
+local search_box = require("widgets.search_box")
 local laptop = require("utils.laptop")
 
 -- Create battery widget
@@ -192,7 +193,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
         },
         { -- Middle widget space setup
             point = { x = s.geometry.width/2 - 70, y = 0 },
-            forced_width = 140,
+            forced_width = 160,
             forced_height = 50,
             widget = wibox.container.background,
             -- bg = "#ff008800",
@@ -230,44 +231,6 @@ screen.connect_signal("request::desktop_decoration", function(s)
     --- }}}
 end)
 -- }}}
---- {{{ Search box widget
--- TODO migrate to seperate file widget
-local search_text = wibox.widget.textbox()
-search_text.text = 'Search'
-local search_image = wibox.widget {
-    {
-        image = beautiful.awesome_icon, -- TODO change this
-        widget = wibox.widget.imagebox
-    },
-    margins = 10,
-    widget = wibox.container.margin,
-}
-local search_box = wibox.widget {
-    {
-        {
-            {
-                search_image,
-                search_text,
-                layout = wibox.layout.fixed.horizontal,
-            },
-            left = dpi(10),
-            right = dpi(10),
-            widget = wibox.container.margin,
-        },
-        bg = beautiful.border_focus,
-        fg = beautiful.fg_focus,
-        widget = wibox.container.background,
-    },
-    layout = wibox.layout.fixed.horizontal,
-}
--- Lets me left click to pull up rofi
-search_box:buttons(awful.util.table.join(
-    awful.button({}, 1, function () 
-        awful.spawn('rofi -combi-modi window,drun,run -show combi -modi combi') 
-    end)
-    )
-)
---- }}}
 ---{{{ Tasklist buttons
 local tasklist_buttons = {
     awful.button({ }, 1, function (c)
