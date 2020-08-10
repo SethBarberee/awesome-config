@@ -82,47 +82,50 @@ screen.connect_signal("request::desktop_decoration", function(s)
         screen  = s,
         filter  = awful.widget.taglist.filter.all,
         buttons = taglist_buttons,
-        widget_template = {
-          {
-            {
-              {
-                {
-                  {
-                    id = "text_role",
-                    widget = wibox.widget.textbox
-                  },
-                  layout = wibox.layout.fixed.horizontal
-                },
-                left = 2,
-                right = 2,
-                widget = wibox.container.margin
-              },
-              id = "background_role",
-              widget = wibox.container.background
+        style   = {
+            shape = gears.shape.powerline
+        },
+        layout   = {
+            spacing = -12,
+            spacing_widget = {
+                color  = '#dddddd',
+                shape  = gears.shape.powerline,
+                widget = wibox.widget.separator,
             },
-            bottom = 2,
-            color = beautiful.bg_normal,
-            widget = wibox.container.margin,
-            id = "current_tag"
-          },
-          left = 3,
-          right = 3,
-          layout = wibox.container.margin,
-          create_callback = function(self, t, index, objects) --luacheck: no unused args
-            local col = t.selected and beautiful.border_focus or beautiful.bg_normal
-            local current_tag = self:get_children_by_id("current_tag")[1]
-
-            current_tag.color = col
-
-            t:connect_signal("property::urgent", function()
-                current_tag.color = beautiful.fg_urgent
-              end
-            )
+            layout  = wibox.layout.fixed.horizontal
+        },
+        widget_template = {
+            {
+                {
+                    {
+                        id = "text_role",
+                        widget = wibox.widget.textbox
+                    },
+                    layout = wibox.layout.fixed.horizontal
+                },
+                left = 18,
+                right = 18,
+                widget = wibox.container.margin
+            },
+            id = "background_role",
+            widget = wibox.container.background,
+          -- Add support for hover colors
+          create_callback = function(self, c3, index, objects) --luacheck: no unused args
+              self:connect_signal('mouse::enter', function()
+                  if not c3.selected then
+                      if self.bg ~= beautiful.bg_focus then
+                          self.backup     = self.bg
+                          self.has_backup = true
+                      end
+                      self.bg = beautiful.bg_focus
+                  end
+              end)
+              self:connect_signal('mouse::leave', function()
+                  if self.has_backup and not c3.selected then
+                      self.bg = self.backup
+                  end
+              end)
           end,
-          update_callback = function(self, t, index, objects) --luacheck: no unused args 
-            local col = t.selected and beautiful.border_focus or beautiful.bg_normal
-            self:get_children_by_id("current_tag")[1].color = col
-          end
       }
     }
 
@@ -140,9 +143,9 @@ screen.connect_signal("request::desktop_decoration", function(s)
         }
     }
     -- Create all my widget layouts for my top wibar
-    local left_layout = wibox.layout
+    local left_top_layout = wibox.layout
     {
-        layout = wibox.layout.fixed.horizontal,
+        layout = wibox.layout.align.horizontal,
         mylauncher,
         si.taglist,
         tagadder, -- TODO multi-monitor magic
@@ -172,61 +175,11 @@ screen.connect_signal("request::desktop_decoration", function(s)
     --- {{{ Top wibar layout/setup
     -- Add widgets to the wibox
     si.mywibox.widget = {
-        -- Taken from https://www.reddit.com/r/unixporn/comments/c5sc6b/awesome_nebula_blaze
-        layout = wibox.layout.manual,
-        { -- Left widget space setup
-            point = { x = 0, y = 0 },
-            forced_width = s.geometry.width/2 - 70,
-            forced_height = 50,
-            widget = wibox.container.background,
-            -- bg = "#33ff8800",
-            {
-                layout = wibox.layout.fixed.horizontal,
-                {
-                    widget = wibox.container.margin,
-                    top = 3,
-                    bottom = 3,
-                    left = 5,
-                    left_layout,
-                }
-            },
-        },
-        { -- Middle widget space setup
-            point = { x = s.geometry.width/2 - 70, y = 0 },
-            forced_width = 160,
-            forced_height = 50,
-            widget = wibox.container.background,
-            -- bg = "#ff008800",
-            {
-                top = 3,
-                widget = wibox.container.margin,
-                {
-                    widget = wibox.container.place,
-                    {
-                        layout = wibox.layout.fixed.horizontal,
-                        s.mytextclock,
-                    },
-                },
-            },
-        },
-        { -- Right widget space setup
-            point = { x = s.geometry.width/2 + 70, y = 0 },
-            forced_width = s.geometry.width/2 - 70,
-            forced_height = 50,
-            widget = wibox.container.background,
-            -- bg = "#00880000",
-            {
-                widget = wibox.container.margin,
-                top = 3,
-                bottom  = 3,
-                right = 5,
-                {
-                    widget = wibox.container.place,
-                    halign = "right",
-                    right_layout,
-                },
-            },
-        },
+        left_top_layout,
+        s.mytextclock,
+        right_layout,
+        expand = "none",
+        layout = wibox.layout.align.horizontal,
     }
     --- }}}
 end)
