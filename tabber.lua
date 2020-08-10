@@ -2,6 +2,8 @@ local awful = require("awful")
 local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
+local xresources = require("beautiful.xresources")
+local dpi = xresources.apply_dpi
 
 client_popup = {}
 
@@ -15,7 +17,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
                 shape = gears.shape.rounded_rect,
             },
             layout   = {
-                spacing = 5,
+                spacing = dpi(5),
                 forced_num_rows = 1, -- wanna mirror windows
                 layout = wibox.layout.grid.horizontal
             },
@@ -25,12 +27,12 @@ screen.connect_signal("request::desktop_decoration", function(s)
                         id     = 'clienticon',
                         widget = awful.widget.clienticon,
                     },
-                    margins = 4,
+                    margins = dpi(4),
                     widget  = wibox.container.margin,
                 },
                 id              = 'background_role',
-                forced_width    = 48,
-                forced_height   = 48,
+                forced_width    = dpi(48),
+                forced_height   = dpi(48),
                 widget          = wibox.container.background,
                 create_callback = function(self, c, index, objects) --luacheck: no unused
                     self:get_children_by_id('clienticon')[1].client = c
@@ -38,7 +40,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
             },
         },
         border_color = beautiful.border_focus,
-        border_width = 2,
+        border_width = dpi(2),
         ontop        = true,
         visible      = false, -- don't show on startup
         placement    = awful.placement.centered,
