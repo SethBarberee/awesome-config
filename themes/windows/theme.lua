@@ -1,5 +1,5 @@
 ---------------------------
--- wal awesome theme --
+-- windows-like awesome theme --
 ---------------------------
 local theme_assets = require("beautiful.theme_assets")
 local xresources = require("beautiful.xresources")
@@ -19,7 +19,9 @@ local pywal = require("colors")
 
 local theme = {}
 
-theme.font          = "sans 9"
+theme.colors = pywal -- basically export the colors up for use in bars/windows
+
+theme.font          = "sans 11"
 
 -- {{{ Background
 theme.bg_normal     = pywal.background
@@ -66,8 +68,9 @@ theme.taglist_squares_sel = theme_assets.taglist_squares_sel(
 theme.taglist_squares_unsel = theme_assets.taglist_squares_unsel(
     taglist_square_size, theme.fg_normal
 )
+theme.taglist_bg_occupied = pywal.color14
+theme.taglist_bg_urgent = pywal.color9
 
-theme.taglist_bg_focus = pywal.color14 -- Pywal blue
 -- }}}
 
 --theme.tasklist_bg = "#ffffff"

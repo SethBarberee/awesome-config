@@ -83,7 +83,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
         filter  = awful.widget.taglist.filter.all,
         buttons = taglist_buttons,
         style   = {
-            shape = gears.shape.powerline
+            shape = gears.shape.powerline,
         },
         layout   = {
             spacing = -12,
@@ -103,8 +103,8 @@ screen.connect_signal("request::desktop_decoration", function(s)
                     },
                     layout = wibox.layout.fixed.horizontal
                 },
-                left = 18,
-                right = 18,
+                left = dpi(18),
+                right = dpi(18),
                 widget = wibox.container.margin
             },
             id = "background_role",
@@ -145,11 +145,27 @@ screen.connect_signal("request::desktop_decoration", function(s)
     -- Create all my widget layouts for my top wibar
     local left_top_layout = wibox.layout
     {
-        layout = wibox.layout.align.horizontal,
-        mylauncher,
-        si.taglist,
-        tagadder, -- TODO multi-monitor magic
+        {
+            {
+                {
+                    {
+                        text = "AwesomeWM",
+                        widget = wibox.widget.textbox,
+                    },
+                    left = 15,
+                    right = 10,
+                    widget = wibox.container.margin
+                },
+                shape = gears.shape.powerline,
+                widget = wibox.container.background
+            },
+            si.taglist,
+            tagadder,
+            layout = wibox.layout.align.horizontal
+        },
         s.mypromptbox,
+        -- this layout has to fixed for promptbox
+        layout = wibox.layout.fixed.horizontal,
     }
     local right_layout = wibox.layout {
         spotify,

@@ -8,8 +8,6 @@ pcall(require, "luarocks.loader")
 local gears = require("gears")
 local awful = require("awful")
 require("awful.autofocus")
--- Widget and layout library
-local wibox = require("wibox")
 -- Theme handling library
 local beautiful = require("beautiful")
 -- Notification library
@@ -56,7 +54,7 @@ local autostart = require("autostart") -- my autostart programs
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
-local theme_name = "tag_bar"
+local theme_name = "windows"
 beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/" .. theme_name .. "/theme.lua")
 
 revelation.init()

@@ -38,16 +38,13 @@ local function delete_tag()
             if not new_name or #new_name == 0 then return end
                 local t = awful.tag.find_by_name(awful.screen.focused(), new_name)
                 if not t then return end
-                -- Delete tag and go to previous tag
-                -- TODO find way to go back previously used tag... history would be a good idea
                 t:delete()
-                awful.tag.viewprev(awful.screen.focused())
             end
     }    
 end
 
 local tagadder = wibox.widget {
-    text = "+",
+    text = " + ",
     halign = 'center',
     valign = 'center',
     widget = wibox.widget.textbox
