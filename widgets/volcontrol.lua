@@ -2,6 +2,10 @@
 -- Most of this is from:
 -- https://github.com/Steryyyy/awesome/blob/master/modules/volcontrol.lua
 --
+-- Modifcations that I did:
+-- * use pywal colors
+-- * use m key to mute
+--
 
 local wibox = require("wibox")
 local awful = require("awful")

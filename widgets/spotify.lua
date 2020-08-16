@@ -62,24 +62,28 @@ local spotify_info = wibox.widget {
     },
     {
         {
+            id = "buttons",
             -- Textboxes that act as butons
+            -- TODO make these more pretty
             {
                 id = "prev",
                 text = "Prev",
+                align = "center",
                 widget = wibox.widget.textbox
             },
             {
                 id = "play",
                 text = "Toggle",
+                align = "center",
                 widget = wibox.widget.textbox
             },
             {
                 id = "next",
                 text = "Next",
+                align = "center",
                 widget = wibox.widget.textbox
             },
-            expand = "none",
-            layout = wibox.layout.align.horizontal,
+            layout = wibox.layout.flex.horizontal,
         },
         margins = 5,
         widget = wibox.container.margin
@@ -115,6 +119,46 @@ local spotify_widget = wibox.widget {
 --               Helper Function                      --
 --------------------------------------------------------
 
+local update_cover = function()
+
+	local get_art_url = [[
+	dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
+	string:'org.mpris.MediaPlayer2.Player' string:'Metadata' | 
+	grep -A 1 "artUrl"| grep -v "artUrl" | awk -F '"' '{print $2}' |
+	sed -e 's/open.spotify.com/i.scdn.co/g'
+	]]
+
+	awful.spawn.easy_async_with_shell(
+		get_art_url,
+		function(link)
+			
+			local download_art = [[
+			tmp_dir="/tmp/awesomewm/${USER}/"
+			tmp_cover_path=${tmp_dir}"cover.jpg"
+			if [ ! -d $tmp_dir ]; then
+				mkdir -p $tmp_dir;
+			fi
+			if [ -f $tmp_cover_path]; then
+				rm $tmp_cover_path
+			fi
+			wget -O $tmp_cover_path ]] ..link .. [[
+			echo $tmp_cover_path
+			]]
+
+			awful.spawn.easy_async_with_shell(
+				download_art,
+				function(stdout)
+
+					local album_icon = stdout:gsub('%\n', '')
+
+					--song_image:set_image(gears.surface.load_uncached(album_icon))
+                                        spotify_info:get_children_by_id('cover')[1]:set_image(gears.surface.load_uncached(album_icon))
+				end
+			)
+		end
+	)
+end
+
 local function update_metadata()
    awful.spawn.easy_async_with_shell(action["status"], function(str, err)
        --naughty.notification { title = "DEBUG", message = "" .. err}
@@ -122,6 +166,7 @@ local function update_metadata()
            -- TODO I need a better test for this
            local status = str:match("Playing")
            if str ~= nil then
+               update_cover()
                spotify_widget:get_children_by_id('status')[1].text = "Playing"
                awful.spawn.easy_async_with_shell(action["metadata"], function(str)
                    local song = str:match("xesam:title:(.*)xesam:trackNumber")
@@ -130,7 +175,7 @@ local function update_metadata()
                    local cover = str:match("mpris:artUrl:(.*)")
                    spotify_info:get_children_by_id('song')[1].text = song
                    spotify_info:get_children_by_id('artist')[1].text = artist
-                   --spotify_info:get_children_by_id('cover')[1].image = "/tmp/awesomewm/seth/cover.png"
+                   spotify_info:get_children_by_id('cover')[1].image = "/tmp/awesomewm/" .. os.getenv("USER") .. "/cover.png"
                end) 
            else
                spotify_info:get_children_by_id('song')[1].text = "Paused"
