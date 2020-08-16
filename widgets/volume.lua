@@ -11,6 +11,7 @@ local awful = require("awful")
 local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
+local volcontrol = require("widgets.volcontrol")
 
 local muted = false -- Keep track of mute
 local sink = ""
@@ -113,32 +114,7 @@ volume:get_children_by_id("bar")[1]:connect_signal('property::value', function()
 end)
 
 volume:get_children_by_id("textbox")[1]:connect_signal('mouse::enter', function()
-    -- Create the sink menu from the length - 1 (to get rid of "Sinks: " part)
-    local volume_items = {}
-    -- Create sink menu based off the indexes we gathered earlier
-    if table_len ~= 0 then -- check if we have enumerated the devices yet
-        for k,v in pairs(volume_menu) do
-            local index = tonumber(k) - 1 -- counteract our padding earlier of the index
-            local string = "Sink " .. index
-            local cmd = "pactl set-default-sink " .. index
-            table.insert(volume_items,  {string, function() awful.spawn(cmd) update_volume() end} )
-        end
-        if shown == false then
-            vol_menu = awful.menu(volume_items)
-            shown = true
-            -- Start a timer to autoclose the menu
-            gears.timer {
-                timeout = 4,
-                autostart = true,
-                single_shot = true,
-                callback = function()
-                    vol_menu:hide()
-                    shown = false
-                end
-            }
-            vol_menu:show()
-        end
-    end
+    volcontrol.start()
 end)
 
 return setmetatable(volume, { __call = function(_, ...) update_volume() return volume end})

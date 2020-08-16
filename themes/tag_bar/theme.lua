@@ -1,5 +1,5 @@
 ---------------------------
--- Default awesome theme --
+-- tag_bar awesome theme --
 ---------------------------
 local theme_assets = require("beautiful.theme_assets")
 local xresources = require("beautiful.xresources")
@@ -8,28 +8,35 @@ local dpi = xresources.apply_dpi
 local gfs = require("gears.filesystem")
 local themes_path = gfs.get_themes_dir()
 
+-- TODO find way to load from ~/.cache and not by symlinking to awesome
+-- directory
+local pywal = require("colors")
+
 local theme = {}
 
 theme.colors = pywal -- basically export the colors up for use in bars/windows
-theme.font          = "sans 9"
+theme.font          = "sans 10"
 
-theme.bg_normal     = "#222222"
-theme.bg_focus      = "#F06576"
-theme.bg_urgent     = "#ff0000"
-theme.bg_minimize   = "#444444"
+-- {{{ Background
+theme.bg_normal     = pywal.background
+theme.bg_focus      = pywal.color11
+theme.bg_urgent     = pywal.color2
+theme.bg_minimize   = pywal.color1
 theme.bg_systray    = theme.bg_normal
-
-theme.fg_normal     = "#aaaaaa"
+-- }}}
+-- {{{ Foreground
+theme.fg_normal     = pywal.foreground
 theme.fg_focus      = "#ffffff"
 theme.fg_urgent     = "#ffffff"
 theme.fg_minimize   = "#ffffff"
-
-theme.useless_gap   = 0
-theme.border_width  = dpi(1)
-theme.border_normal = "#000000"
+-- }}}
+-- {{{ Border Settings
+theme.useless_gap   = dpi(5)
+theme.border_width  = dpi(2)
+theme.border_normal = theme.bg_normal
 theme.border_focus  = theme.bg_focus
 theme.border_marked = "#91231c"
-
+-- }}}
 -- There are other variable sets
 -- overriding the default one when
 -- defined, the sets are:
@@ -43,6 +50,7 @@ theme.border_marked = "#91231c"
 -- Example:
 --theme.taglist_bg_focus = "#ff0000"
 
+-- {{{ Taglist Settings
 -- Generate taglist squares:
 local taglist_square_size = dpi(4)
 theme.taglist_squares_sel = theme_assets.taglist_squares_sel(
@@ -51,6 +59,10 @@ theme.taglist_squares_sel = theme_assets.taglist_squares_sel(
 theme.taglist_squares_unsel = theme_assets.taglist_squares_unsel(
     taglist_square_size, theme.fg_normal
 )
+
+theme.taglist_bg_occupied = pywal.color7 -- Pywal blue
+theme.taglist_bg_focus = pywal.color14 -- Pywal blue
+-- }}}
 
 theme.tasklist_bg = "#ffffff"
 theme.tasklist_bg_focus = "#ffffff"
@@ -64,6 +76,9 @@ theme.wibar_fg = "#ffffff"
 -- notification_[width|height|margin]
 -- notification_[border_color|border_width|shape|opacity]
 
+theme.notification_fg = pywal.color14
+theme.notification_margin = dpi(4)
+theme.notification_icon_resize_strategy = "resize"
 
 -- Variables set for theming the menu:
 -- menu_[bg|fg]_[normal|focus]
@@ -77,6 +92,7 @@ theme.menu_width  = dpi(100)
 -- beautiful.variable in your rc.lua
 --theme.bg_widget = "#cc0000"
 
+-- {{{ Titlebar images
 -- Define the image to load
 theme.titlebar_close_button_normal = themes_path.."default/titlebar/close_normal.png"
 theme.titlebar_close_button_focus  = themes_path.."default/titlebar/close_focus.png"
@@ -103,13 +119,15 @@ theme.titlebar_maximized_button_normal_inactive = themes_path.."default/titlebar
 theme.titlebar_maximized_button_focus_inactive  = themes_path.."default/titlebar/maximized_focus_inactive.png"
 theme.titlebar_maximized_button_normal_active = themes_path.."default/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active  = themes_path.."default/titlebar/maximized_focus_active.png"
+-- }}}
 
--- TODO so yeah... let's just set wallpaper here
+-- Set wallpaper from wal. If we don't have one, set the default
 theme.wallpaper = pywal.wallpaper
 if theme.wallpaper == 'None' then
     theme.wallpaper = themes_path .. "default/background.png"
 end
 
+-- {{{ Layout images
 -- You can use your own layout icons like this:
 theme.layout_fairh = themes_path.."default/layouts/fairhw.png"
 theme.layout_fairv = themes_path.."default/layouts/fairvw.png"
@@ -127,6 +145,7 @@ theme.layout_cornernw = themes_path.."default/layouts/cornernww.png"
 theme.layout_cornerne = themes_path.."default/layouts/cornernew.png"
 theme.layout_cornersw = themes_path.."default/layouts/cornersww.png"
 theme.layout_cornerse = themes_path.."default/layouts/cornersew.png"
+-- }}}
 
 -- Generate Awesome icon:
 theme.awesome_icon = theme_assets.awesome_icon(
@@ -137,6 +156,7 @@ theme.awesome_icon = theme_assets.awesome_icon(
 -- from /usr/share/icons and /usr/share/icons/hicolor will be used.
 theme.icon_theme = nil
 
+
 return theme
 
--- vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:textwidth=80
+-- vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:textwidth=80:foldmethod=marker:fdl=0

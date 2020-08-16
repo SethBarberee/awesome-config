@@ -19,6 +19,7 @@ local pywal = require("colors")
 
 local theme = {}
 
+theme.colors = pywal -- basically export the colors up for use in bars/windows
 theme.font          = "sans 9"
 
 -- {{{ Background

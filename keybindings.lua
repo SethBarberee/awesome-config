@@ -110,7 +110,7 @@ awful.keyboard.append_global_keybindings({
     -- Screen Locking
     awful.key({ modkey }, "l", function() awful.spawn.with_shell("light-locker-command -l") end,
               {description = "Lock PC", group="media"}),
-    awful.key({ modkey }, "t", function() awful.spawn.with_shell("rofi -modi 'theme:~/.config/rofi/rofi-wal-theme-switcher.sh' -show theme") end,
+    awful.key({ modkey, "Shift" }, "t", function() awful.spawn.with_shell("rofi -modi 'theme:~/.config/rofi/rofi-wal-theme-switcher.sh' -show theme") end,
               {description = "Change wal theme", group="media"}),
     awful.key({ modkey }, "b", function() awful.spawn.with_shell("~/rofi-bluetooth/rofi-bluetooth") end,
               {description = "Bluetooth menu", group="media"}),
@@ -164,6 +164,7 @@ client.connect_signal("request::default_keybindings", function()
     })
 end)
 
+-- {{{ Media Keys
 -- Add media keys into the keys
 awful.keyboard.append_global_keybindings({
     awful.key({}, "XF86AudioPlay", function() awful.spawn.with_shell("playerctl play-pause") end,
@@ -185,12 +186,14 @@ awful.keyboard.append_global_keybindings({
     awful.key({}, "XF86MonBrightnessDown", function() brightness.lower_brightness() end,
               {description = "Decrease Brightness", group="monitor"}),
 })
+-- }}}
 
--- Plugin
+-- {{{ Plugin
 awful.keyboard.append_global_keybinding(
     awful.key({ modkey,           }, "e",      revelation,
               {description = "toggle revelation", group="plugin"})
 )
+-- }}}
 
 
 -- Bind all key numbers to tags.
@@ -254,3 +257,4 @@ awful.keyboard.append_global_keybindings({
 })
 -- }}}
 
+--- vim: foldmethod=marker fdl=0
