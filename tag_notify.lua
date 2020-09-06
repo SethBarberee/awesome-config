@@ -89,18 +89,6 @@ awful.tag.attached_connect_signal(s, "property::layout", function ()
     end
 end)
 
-awful.tag.attached_connect_signal(s, "property::urgent", function (t)
-    naughty.notification { title = "Urgent client:", message = "Tag ".. t.index}
-    local c_table = t:clients() -- get a table of all clients
-    for k, v in pairs(c_table) do
-        -- iterate over the table and determine what is urgent
-        if v.urgent then
-            naughty.notification { title = "Urgent client:", message = v.instance .. ": " .. v.name}
-            -- TODO switch to urgent client
-        end
-    end
-end)
-
 tag.connect_signal("property::selected", function (t)
     if t.selected then
         -- Pad a little to visually tell it's selected
@@ -108,4 +96,10 @@ tag.connect_signal("property::selected", function (t)
     else
         t.name = t.name:gsub("^[ ]*",""):gsub("[ ]*$","")
     end
+end)
+
+-- Jumpt to urgent client
+client.connect_signal("property::urgent", function(c)
+    c.minimized = false
+    c:jump_to()
 end)

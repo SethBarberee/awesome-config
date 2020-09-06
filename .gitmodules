@@ -4,3 +4,9 @@
 [submodule "awesome-upower-battery"]
 	path = awesome-upower-battery
 	url = https://github.com/berlam/awesome-upower-battery.git
+[submodule "awesome-wm-nice"]
+	path = awesome-wm-nice
+	url = git@github.com:mut-ex/awesome-wm-nice.git
+[submodule "nice"]
+	path = nice
+	url = git@github.com:mut-ex/awesome-wm-nice.git
